@@ -19,8 +19,9 @@ If time permits, I would like to change this to provide the command mappings via
 
 ## Playstation Controller Setup ( general guide to connect hardware & setup )
 
-Here is what I have figured out so far for PS3 on Raspberry PI 3 w/ integrated bluetooth.
-The bellow just shows how to get PS3 controller connected.
+Here is what I have figured out so far for PS3 on Raspberry PI 3 w/ integrated bluetooth.  The bellow just shows how to get PS3 controller connected.
+
+_cmidgley note:_ I recommend first getting the controller working on just USB, ignoring the entire Bluetooth setup.  Once the controller works with cncjs, changing to Bluetooth (and back) won't cause any changes to the configuration and removes quite a bit of complexity when first getting this to work.  Skip over the following and start at _Test Controller Connectivity_.
 
 
 ## Bluetooth Configuration
@@ -106,22 +107,14 @@ jstest /dev/input/js0
 
 ----------------------------------------
 
-## Install NodeJS Libraries
- - https://www.npmjs.com/package/node-hid
- - https://www.npmjs.com/package/dualshock-controller
+## Install supporting tools
 
-### Node.js DS3 Controller Setup
-```
-# Install Tools
 sudo apt-get install -y libudev-dev libusb-1.0-0 libusb-1.0-0-dev build-essential git
 sudo apt-get install -y gcc-4.8 g++-4.8 && export CXX=g++-4.8
-#npm install node-gyp node-pre-gyp
-
-# Install node-hid with hidraw support
-#npm install node-hid --driver=hidraw --build-from-source --unsafe-perm
 
 # Install Pendant Package
 sudo npm install -g cncjs-pendant-ps3 --unsafe-perm  # Install Globally
+_cmidgley note_: The above installs the NPM package, but to use this fork you must install this fork directly.  
 
 ## If NOT installed globally, Install node-hid with hidraw support (https://github.com/rdepena/node-dualshock-controller)
 ```
@@ -158,8 +151,11 @@ cd /usr/lib/node_modules/cncjs-pendant-ps3/
 sudo npm install node-hid --driver=hidraw --build-from-source --unsafe-perm
 ```
 
-I recommend rebooting now.
-After reboot you can test pendant by running `cncjs-pendant-ps3 -p "/dev/ttyUSB0"`.
+I recommend rebooting before continuing.  
+
+After reboot you can test pendant by running `cncjs-pendant-ps3 -p //dev/xxx -b yyy -controller-type zzz`, where xxx is the device on the server that connects to your CNC controller (Grbl, Marlin, etc), such as /dev/ttyUSB0 or /dev/ACM0, yyy is the baud rate you use to communicate with your controller, and zzz is the type of controller (marlin, grbl, smoothie, tinyg).  The pendant device will be automatically detected and is not provided as an option to cnc-pendant-ps3.
+
+_cmidgley note:_ Changing controller type does not yet adjust the gcode commands and thereby does not work across all controllers. The original pendant code was tied to grbl, and this fork will likely become tied to marlin, unless time can be found to switch to a more generic (likely configuration file) based system. 
 
 ----------------------------------------
 

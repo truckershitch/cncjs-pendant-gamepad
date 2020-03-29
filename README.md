@@ -7,6 +7,16 @@ Use [Playstation 3 Controller](https://www.playstation.com/en-us/explore/accesso
 
 Using a wireless game controller (like a PS3 controller) seems to be one of the lowest cost & simplest solution method. See related issue [#103](https://github.com/cheton/cnc/issues/103)
 
+## cmidgley fork information
+
+This fork has been made to make several improvements.  _This is a work-in-progress and should be not used at this time._   The goals of this fork are:
+
+* Fix issues with some controllers where writes to the device lock up
+* Change to using Marlin commands
+* Some improvements to documentation and help to avoid some pitfalls I have encountered
+
+If time permits, I would like to change this to provide the command mappings via a configuration file, so that multiple formats (Grbl, Marlin, etc) and button options can be supported without code changes.  We will see if that time ever becomes available...
+
 ## Playstation Controller Setup ( general guide to connect hardware & setup )
 
 Here is what I have figured out so far for PS3 on Raspberry PI 3 w/ integrated bluetooth.

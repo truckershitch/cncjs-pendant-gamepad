@@ -3,7 +3,7 @@
 var program = require('commander');
 var serialport = require('serialport');
 var inquirer = require('inquirer');
-var pkg = require('../package.json');
+var pkg = require('./package.json');
 var serverMain = require('./src/pendant');
 
 var options = {};

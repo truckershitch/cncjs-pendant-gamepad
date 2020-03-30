@@ -64,7 +64,7 @@ module.exports = function(options, callback) {
 				console.log('Socket: Unknown command ' + eventName + ": " + a2 + ", " + a3);
 		}
 		else
-			socket.emit(eventName, a1, a2, a3, a4, a5);
+			socket.emit(eventName, a1, a2, a3);
 	}
 
 	// handle receiving messages from cncjs socket server, or faking out for --fakeSocket option

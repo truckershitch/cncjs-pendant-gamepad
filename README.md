@@ -136,7 +136,15 @@ npm install -g
 
 Note that there will be quite a few warnings, such as deprecated modules and compiler warnings.  You can ignore this for now, though someday work should be done fix this...!  Anyone want to attack this problem?!
 
-### If NOT installed globally, Install node-hid with hidraw support (https://github.com/rdepena/node-dualshock-controller)
+#### If not installed globally, or no pendant found
+The dualshock controller [does not use the joystick implementation](https://github.com/rdepena/node-dualshock-controller), and requires node-hid with hidraw to be installed.  When installing this package globally, this often works.  But if installed locally, or you find that joystick testing works but cncjs-pendant-ps3 doesn't find any pendants when it starts up, you should try installing node-hid as follows:
+
+```
+# Install (node-hid --driver=hidraw) on cncjs-pendant-ps3
+# Start in directory that contains cncjs-pendant-ps3, such as:
+cd /usr/lib/node_modules/cncjs-pendant-ps3/
+sudo npm install node-hid --driver=hidraw --build-from-source --unsafe-perm
+```
 
 ### [Create udev Rules](https://github.com/rdepena/node-dualshock-controller#-create-udev-rules)
 ```
@@ -161,36 +169,37 @@ sudo udevadm control --reload-rules
 exit
 ```
 
-# QUICK FIX for node-hid hidraw... 
-_cmidgley note_: I did not have this issue, so I can't explain it.  If somebody else does, please let me know whatever you can learn about the conditions and steps to reproduce/fix so we can improve this part of the documentation
-
-I am having issues with node-hid --driver=hidraw not seeming to work... quickest fix is to reinstall, node-hid --driver=hidraw 
-
-```
-# Reinstall (node-hid --driver=hidraw) on cncjs-pendant-ps3
-cd /usr/lib/node_modules/cncjs-pendant-ps3/
-sudo npm install node-hid --driver=hidraw --build-from-source --unsafe-perm
-```
-
 I recommend rebooting before continuing.  
 
 # Running cncjs-pendant-ps3
 
 The program accepts several optional arguments:
-* -l, --list: List available ports and then exit
-* -p, --port <port>: The port of the controller, such as /dev/ttyUSB0 or /dev/ACM0
-* -b, --baudrate <baudrate>: The baudrate used when connecting to the controller (default: 115200)
-* -t, controllerType <type>: The type of controller (marlin, grbl, smoothie, tinyg), defaults to grbl
-* -s, --secret <secret>: The secret API key for accessing the cncjs server.  If not specified, checks if environment variable CNCJS_SECRET is set, and if not, goes directly to the ~/.cncrc file to get the secret.  Generally can be ignored when cncjs and cncjs-pendant-ps3 are on the same server, but must be specified if they are operating on difference servers.
-* --socketAddress <address>: The IP address / DNS name of the cncjs server (default: localhost) 
-* --socketPort <port>: The port number of the cncjs server (default: 8000)
-* --clone: if using a cloned PS3 controller you might get a write timout when starting up.  Disables writes to controller, so rumble and led status is disabled.
-* --accessTokenLifetime <lifetime>: How long the access token should be generated, can generally be ignored.  In seconds or a time span string (default: 30d)
-* -v, --verbose: Display verbose (debugging) messages
-* -f, --fake: Use a fake socket server and display cncjs messages to console instead
-* --help: bring up a help listing of all options
+* `-l, --list` List available ports and then exit
+* `-p, --port <port>` The port of the controller, such as /dev/ttyUSB0 or /dev/ACM0
+* `-b, --baudrate <baudrate>` The baudrate used when connecting to the controller (default: 115200)
+* `-t, controllerType <type>` The type of controller (marlin, grbl, smoothie, tinyg), defaults to grbl
+* `-s, --secret <secret>` The secret API key for accessing the cncjs server.  If not specified, checks if environment variable CNCJS_SECRET is set, and if not, goes directly to the ~/.cncrc file to get the secret.  Generally can be ignored when cncjs and cncjs-pendant-ps3 are on the same server, but must be specified if they are operating on difference servers.
+* `--socketAddress <address>` The IP address / DNS name of the cncjs server (default: localhost) 
+* `--socketPort <port>` The port number of the cncjs server (default: 8000)
+* `--clone` if using a cloned PS3 controller you might get a write timout when starting up.  Disables writes to controller, so rumble and led status is disabled.
+* `--accessTokenLifetime <lifetime>` How long the access token should be generated, can generally be ignored.  In seconds or a time span string (default: 30d)
+* `-v, --verbose` Display verbose (debugging) messages
+* `-f, --fake` Use a fake socket server and display cncjs messages to console instead
+* `--help` bring up a help listing of all options
 
-You directly run cncjs-pendant-ps3 from the command line using  `<path-to-cncjs-pendant-ps3>/cncjs-pendant-ps3 -p /dev/xxx` (or if using a local copy, you can run it from the project directory using `node bin/cncjs-pendant-ps3 -p /dev/xxx`) where xxx is the device on the server that connects to your CNC controller (Grbl, Marlin, etc), such as /dev/ttyUSB0 or /dev/ACM0, yyy. You may need other options, such as -b (baud rate) or -t (controller type) - see above.  Note that the pendent device will be automatically detected and is not provided as an option to cnc-pendant-ps3.  For example:
+You directly run cncjs-pendant-ps3 from the command line using  
+
+```
+<path-to-cncjs-pendant-ps3>/cncjs-pendant-ps3 -p /dev/xxx
+``` 
+
+Or, if using a local copy, you can run it from the project directory using 
+
+```
+node bin/cncjs-pendant-ps3 -p /dev/xxx
+```
+
+ where xxx is the device on the server that connects to your CNC controller (Grbl, Marlin, etc), such as /dev/ttyUSB0 or /dev/ACM0, yyy. You may need other options, such as -b (baud rate) or -t (controller type) - see above.  Note that the pendent device will be automatically detected and is not provided as an option to cnc-pendant-ps3.  For example:
 
 ```
 cd ~/cncjs-pendant-ps3

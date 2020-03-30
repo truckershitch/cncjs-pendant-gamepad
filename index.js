@@ -25,10 +25,17 @@ const dualShock = require('dualshock-controller'); // https://www.npmjs.com/pack
 
 // Send message to the socket server
 const sendMessage = function(command, port, options) {
-	if (options.fake)
+	if (options.fakeSocket)
 		console.log("Message " + command + ": " + options);
 	else
 		socket.emit(command, port, options);
+}
+
+const receiveMessage = function(msg, callback) {
+	if (!options.fakeSocket)
+		socket.on(msg, callback);
+	else
+		console.log('Listener set up for ' + msg + ': ignoring for fake socket');
 }
 
 // Generate Token
@@ -65,6 +72,10 @@ module.exports = function(options, callback) {
 	function checkController(socket, controller) {
 		// Get HID Devices
 		var devices = HID.devices();
+		if (options.verbose) {
+			console.log("Devices discovered:");
+			console.log(devices);
+		}
 
 		// Find DualShock 3 Controller HID
 		devices.forEach(function(device) {
@@ -83,10 +94,6 @@ module.exports = function(options, callback) {
 			console.log("No PS3 controllers found");
 			console.log("Make sure your controller is connected by pressing the PS button in the center of the controller");
 			firstCheck = false;
-			if (options.verbose) {
-				console.log("Devices discovered:");
-				console.log(HID.devices());
-			}
 		}
 	}
 

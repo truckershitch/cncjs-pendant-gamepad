@@ -39,44 +39,41 @@ const getUserHome = function() {
 
 // Pass User Defined Options
 module.exports = function(options, callback) {
-    options = options || {};
-    options.secret = get(options, 'secret', process.env['CNCJS_SECRET']);
-	options.baudrate = get(options, 'baudrate', 115200);
-	options.socketAddress = get(options, 'socketAddress', 'localhost');
-	options.socketPort = get(options, 'socketPort', 8000);
-	options.controllerType = get(options, 'controllerType', 'Grbl');
-	options.accessTokenLifetime = get(options, 'accessTokenLifetime', '30d');
-	options.verbose = get(options, 'verbose', false);
-	options.clone = get(options, 'clone', false);
+    // options = options || {};
+    // options.secret = get(options, 'secret', process.env['CNCJS_SECRET']);
+	// options.baudrate = get(options, 'baudrate', 115200);
+	// options.socketAddress = get(options, 'socketAddress', 'localhost');
+	// options.socketPort = get(options, 'socketPort', 8000);
+	// options.controllerType = get(options, 'controllerType', 'Grbl');
+	// options.accessTokenLifetime = get(options, 'accessTokenLifetime', '30d');
+	// options.verbose = get(options, 'verbose', false);
+	// options.clone = get(options, 'clone', false);
+	
     var pendant_started = false;
 
-	// View HID Devices
-	if (options.verbose)
-		console.log(HID.devices());
-
-// Logging Message
-    console.log("Waiting for Pendant to connect... please press the PS button on the DS3 controller.");
-
-    // [Function] check for controller to conect (show up in devices), then start services. Kill services on disconect.
-	setInterval(checkController, 3*1000);
+    // [Function] check for controller to connect (show up in devices), then start services. Kill services on disconect.
+	setInterval(checkController, 500);
+	firstCheck = true;
 	function checkController(socket, controller) {
-		//console.log('Checkign Controller Status');
-
 		// Get HID Devices
 		var devices = HID.devices();
 
 		// Find DualShock 3 Controller HID
 		devices.forEach(function(device) {
-			// List Devices
-			//console.log(device.vendorId + " | " + device.productId);
-
 			// Detect DualShock 3 Controller HID
 			if (!pendant_started && (device.vendorId == 1356 && device.productId == 616)) {
-				console.log("Pendant Connected");
-
+				console.log("Pendant " + device.vendorId + " | " + device.productId + " connected");
+				
 				// Start Socket Connection & Controller Conection
 				pendant_started = true;
 				connectPendant();
+			} else if (firstCheck) {
+				console.log("No PS3 controllers found.  Please press the PS button on the controller.");
+				firstCheck = false;
+				if (options.verbose) {
+					console.log("Devices discovered:");
+					console.log(HID.devices());
+				}
 			}
 		});
 	}

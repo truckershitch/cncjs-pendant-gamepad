@@ -19,7 +19,7 @@ If time permits, I would like to change this to provide the command mappings via
 
 ## Button map
 
-![Button Map](images/cncjs-button-map.jpg)
+![Button Map](images/cncjs-button-map.png)
 
 [PS3 CNC Control Button Map](https://docs.google.com/drawings/d/1DMzfBk5DSvjJ082FrerrfmpL19-pYAOcvcmTbZJJsvs/edit?usp=sharing)
 

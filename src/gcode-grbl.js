@@ -42,4 +42,19 @@ module.exports = class {
         this.sendMessage('command', this.options.port, 'gcode', 'G0 Z3');
         this.sendMessage('command', this.options.port, 'gcode', 'G90');
     }
+
+    // coolant operations: mist on
+    coolantMistOn() {
+        sendMessage('command', options.port, 'gcode', 'M7');
+    }
+
+    // coolant operations: flood on
+    coolantFloodOn() {
+        sendMessage('command', options.port, 'gcode', 'M8');
+    }
+
+    // coolant operations: all coolant off
+    coolantOff() {
+        sendMessage('command', options.port, 'gcode', 'M9');
+    }
 };

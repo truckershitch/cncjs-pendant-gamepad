@@ -207,7 +207,7 @@ The program accepts several optional arguments:
 * `-l, --list` List available ports and then exit
 * `-p, --port <port>` The port of the controller, such as /dev/ttyUSB0 or /dev/ACM0
 * `-b, --baudrate <baudrate>` The baudrate used when connecting to the controller (default: 115200)
-* `-t, controllerType <type>` The type of controller (marlin, grbl, smoothie, tinyg), defaults to grbl
+* `-t, --controllerType <type>` The type of controller (marlin, grbl, smoothie, tinyg), defaults to grbl
 * `-s, --secret <secret>` The secret API key for accessing the cncjs server.  If not specified, checks if environment variable CNCJS_SECRET is set, and if not, goes directly to the ~/.cncrc file to get the secret.  Generally can be ignored when cncjs and cncjs-pendant-ps3 are on the same server, but must be specified if they are operating on difference servers.
 * `--socketAddress <address>` The IP address / DNS name of the cncjs server (default: localhost) 
 * `--socketPort <port>` The port number of the cncjs server (default: 8000)
@@ -217,23 +217,13 @@ The program accepts several optional arguments:
 * `-f, --fake` Use a fake socket server and display cncjs messages to console instead
 * `--help` bring up a help listing of all options
 
-You directly run cncjs-pendant-ps3 from the command line using  
+The most important options are --port (-p) to specify the communications port to the controller, and --controllerType (-t) to specify the type of controller you are running (Marlin, Grbl, etc).  If you don't know your port number, use the --list (-l) option to see a list of ports to try.
 
-```
-<path-to-cncjs-pendant-ps3>/cncjs-pendant-ps3 -p /dev/xxx
-``` 
-
-Or, if using a local copy, you can run it from the project directory using 
-
-```
-node cncjs-pendant-ps3 -p /dev/xxx
-```
-
- where xxx is the device on the server that connects to your CNC controller (Grbl, Marlin, etc), such as /dev/ttyUSB0 or /dev/ACM0, yyy. You may need other options, such as -b (baud rate) or -t (controller type) - see above.  Note that the pendent device will be automatically detected and is not provided as an option to cnc-pendant-ps3.  For example:
+To start the pendant server, run a command similar to this:
 
 ```
 cd ~/cncjs-pendant-ps3
-node cncjs-pendant-ps3 -p /dev/ACM0 -b 250000 -clone
+node cncjs-pendant-ps3 -p /dev/ACM0 -b 250000 -clone -t marlin
 ```
 
 ## First use recommendation

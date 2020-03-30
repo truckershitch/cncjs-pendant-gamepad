@@ -44,4 +44,19 @@ module.exports = class {
         if (this.options.verbose)
             console.log('Probe ignored on Marlin');
     }
+
+    // coolant operations: mist on
+    coolantMistOn() {
+        sendMessage('command', options.port, 'gcode', 'M7');
+    }
+
+    // coolant operations: flood on
+    coolantFloodOn() {
+        sendMessage('command', options.port, 'gcode', 'M8');
+    }
+
+    // coolant operations: all coolant off
+    coolantOff() {
+        sendMessage('command', options.port, 'gcode', 'M9');
+    }
 };

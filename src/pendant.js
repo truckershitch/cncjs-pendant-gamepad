@@ -59,20 +59,18 @@ module.exports = function(options, callback) {
 	}
 
 	// set up our abstract gcode emitter
-	var gcode = null;
 	switch (options.controllerType.toLowerCase()) {
 		case 'grbl':
-			const Gcode = require('./gcode-grbl');
-			gcode = new Gcode(options, sendMessage);
+			Gcode = require('./gcode-grbl');
 			break;
 		case 'marlin':
-			const Gcode = require('./gcode-marlin');
-			gcode = new Gcode(options, sendMessage);
+			Gcode = require('./gcode-marlin');
 			break;
 		default:
 			console.error('Controller type ' + options.controllerType + ' unknown; unable to continue');
 			process.exit();
 	}
+	gcode = new Gcode(options, sendMessage);
 			
 	// track that we do not yet have a pendant attached
     var pendant_started = false;
@@ -396,13 +394,6 @@ module.exports = function(options, callback) {
 		controller.on('square:press', function(data) {
 			if (r1) {
 				gcode.probe();
-				// sendMessage('command', options.port, 'gcode', 'G91');
-				// sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
-				// sendMessage('command', options.port, 'gcode', 'G90');
-				// sendMessage('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
-				// sendMessage('command', options.port, 'gcode', 'G91');
-				// sendMessage('command', options.port, 'gcode', 'G0 Z3');
-				// sendMessage('command', options.port, 'gcode', 'G90');
 
 				if (options.verbose)
 					console.log('probe:' + data);
@@ -480,24 +471,24 @@ module.exports = function(options, callback) {
 		// ------------------------------------------
 		// PSX
 
-		// M7
+		// M7 - mist on
 		controller.on('triangle:press', function(data) {
 			if (psx) {
-				sendMessage('command', options.port, 'gcode', 'M7');
+				gcode.coolantMistOn();
 			}
 		});
 
-		// M9
+		// M9 - coolant off
 		controller.on('square:press', function(data) {
 			if (psx) {
-				sendMessage('command', options.port, 'gcode', 'M9');
+				gcode.coolantOff();
 			}
 		});
 
-		// M8
+		// M8 - flood on
 		controller.on('circle:press', function(data) {
 			if (psx) {
-				sendMessage('command', options.port, 'gcode', 'M8');
+				gcode.coolantFloodOn();
 			}
 		});
 

@@ -1,12 +1,29 @@
 #!/usr/bin/env node
 
-// Node.js Playstation 3 / DS3 Controller for CNC.js
-// by Austin St. Aubin <austinsaintaubin@gmail.com>
-// v1.0.9 BETA [2017/03/27]
-// modified by Chris Midgley <chris@koose.com> [2020]
+// MIT License
+//
+// Copyright (c) 2017 Austin St. Aubin
+// Copyright (c) 2020 Chris Midgley
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-// USAGE EXAMPLE: ./cncjs-pendant-ps3 -p "/dev/ttyUSB0"
-// SEE ALL OPTIONS: ./cncjs-pendant-ps3 -h
+
 
 const fs = require('fs');
 const path = require('path');
@@ -434,39 +451,6 @@ module.exports = function(options, callback) {
 			}
 		});
 
-/*
-		// ------------------------------------------
-		// R2
-
-		// Triangle
-		controller.on('triangle:press', function(data) {
-			if (r2) {
-				sendMessage('command', options.port, '');
-			}
-		});
-
-		// Square
-		controller.on('square:press', function(data) {
-			if (r2) {
-				sendMessage('command', options.port, '');
-			}
-		});
-
-		// Circle
-		controller.on('circle:press', function(data) {
-			if (r2) {
-				sendMessage('command', options.port, '');
-			}
-		});
-
-		// X
-		controller.on('x:press', function(data) {
-			if (r2) {
-				sendMessage('command', options.port, '');
-			}
-		});
-*/
-
 
 		// ------------------------------------------
 		// PSX
@@ -499,82 +483,33 @@ module.exports = function(options, callback) {
 			}
 		});
 
-
 		// ------------------------------------------
-
-	/*
-		// Raise Z
-		controller.on('triangle:press', function(data) {
-			if (psx) {
-				sendMessage('command', options.port, 'gcode', 'G91 G0 Z0.1'); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
-				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
-
-				console.log('Raising Z:' + data);
-			}
-		});
-
-		//
-		controller.on('square:press', function(data) {
-			if (psx) {
-
-			}
-		});
-
-
-		// Probe
-		controller.on('circle:press', function(data) {
-			if (psx) {
-				sendMessage('command', options.port, 'gcode', 'G91');
-				sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
-				sendMessage('command', options.port, 'gcode', 'G90');
-				sendMessage('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
-				sendMessage('command', options.port, 'gcode', 'G91');
-				sendMessage('command', options.port, 'gcode', 'G0 Z3');
-				sendMessage('command', options.port, 'gcode', 'G90');
-
-				console.log('probe:' + data);
-			}
-		});
-
-		// Lower Z
-		controller.on('x:hold', function(data) {
-			if (psx) {
-				sendMessage('command', options.port, 'gcode', 'G91 G0 Z-0.1'); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
-				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
-
-				console.log('Lowering Z:' + data);
-			}
-		});
-	*/
-
-		// ------------------------------------------
-
 		// ==[ D Pad ]==
+
 		var move_x_axis = 0;
 		var move_y_axis = 0;
 		var move_z_axis = 0;
 
-		// Set Movement of Gantry Based on DPad, and Z-Input from other buttons
+		// set movement of gantry based on dpad, and z-input from other buttons
 		function dpad(axis, direction, name) {
 			if (l2) {
-				// Fast
+				// fast
 				dpadSetAxisMovment(axis, direction, 3);
 			} else if (l1) {
-				// Slow
+				// slow
 				dpadSetAxisMovment(axis, direction, 1);
 			} else {
-				// Normal
+				// normal
 				dpadSetAxisMovment(axis, direction, 2);
 			}
 
-			// Debugging
 			if (options.verbose)
 				console.log(name + ': ' + direction + ' | ' + axis + ' | ' +  + l1 + r1);
 		}
 
-		// Set Movemtn Varables
+		// set movement variables
 		function dpadSetAxisMovment(axis, direction, speed) {
-			// Set Spped
+			// set speed
 			switch(speed) {
 				case 1:
 					speed = 0.05;
@@ -586,7 +521,7 @@ module.exports = function(options, callback) {
 					speed = 0.5;
 			}
 
-			// Set Movemnt Varables
+			// Set movement variables
 			if (axis == "X" && ( move_x_axis < 14 && move_x_axis > -14 )) {
 				// X Axis
 

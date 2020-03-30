@@ -45,7 +45,9 @@ module.exports = function(options, callback) {
 	options.socketAddress = get(options, 'socketAddress', 'localhost');
 	options.socketPort = get(options, 'socketPort', 8000);
 	options.controllerType = get(options, 'controllerType', 'Grbl');
-    options.accessTokenLifetime = get(options, 'accessTokenLifetime', '30d');
+	options.accessTokenLifetime = get(options, 'accessTokenLifetime', '30d');
+	options.verbose = get(options, 'verbose', false);
+	options.clone = get(options, 'clone', false);
     var pendant_started = false;
 
 	// View HID Devices

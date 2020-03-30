@@ -23,6 +23,7 @@ program
 program.parse(process.argv);
 
 var options = {
+    list: program.list,
     secret: program.secret,
     port: program.port,
     baudrate: program.baudrate,
@@ -34,6 +35,7 @@ var options = {
 };
 
 if (options.list) {
+    console.log('Available serial ports:');
 	serialport.list(function(err, ports) {
 		if (err) {
 			console.error(err);

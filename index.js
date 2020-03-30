@@ -52,7 +52,7 @@ module.exports = function(options, callback) {
     var pendant_started = false;
 
     // [Function] check for controller to connect (show up in devices), then start services. Kill services on disconect.
-	setInterval(checkController, 500);
+	setInterval(checkController, 1000);
 	firstCheck = true;
 	function checkController(socket, controller) {
 		// Get HID Devices
@@ -67,15 +67,18 @@ module.exports = function(options, callback) {
 				// Start Socket Connection & Controller Conection
 				pendant_started = true;
 				connectPendant();
-			} else if (firstCheck) {
-				console.log("No PS3 controllers found.  Please press the PS button on the controller.");
-				firstCheck = false;
-				if (options.verbose) {
-					console.log("Devices discovered:");
-					console.log(HID.devices());
-				}
 			}
 		});
+
+		// if the first attempt, and no controllers found, tell the user they may need to press the PS button
+		if (firstCheck && !pendant_started) {
+			console.log("No PS3 controllers found.  Please press the PS button on the controller.");
+			firstCheck = false;
+			if (options.verbose) {
+				console.log("Devices discovered:");
+				console.log(HID.devices());
+			}
+		}
 	}
 
 	// ###########################################################################

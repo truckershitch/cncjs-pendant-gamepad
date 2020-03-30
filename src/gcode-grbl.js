@@ -45,16 +45,16 @@ module.exports = class {
 
     // coolant operations: mist on
     coolantMistOn() {
-        sendMessage('command', options.port, 'gcode', 'M7');
+        this.sendMessage('command', this.options.port, 'gcode', 'M7');
     }
 
     // coolant operations: flood on
     coolantFloodOn() {
-        sendMessage('command', options.port, 'gcode', 'M8');
+        this.sendMessage('command', this.options.port, 'gcode', 'M8');
     }
 
     // coolant operations: all coolant off
     coolantOff() {
-        sendMessage('command', options.port, 'gcode', 'M9');
+        this.sendMessage('command', this.options.port, 'gcode', 'M9');
     }
 };

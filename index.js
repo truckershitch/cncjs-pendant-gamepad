@@ -17,15 +17,9 @@ const get = require('lodash.get');
 const HID = require('node-hid');
 const dualShock = require('dualshock-controller'); // https://www.npmjs.com/package/dualshock-controller
 
-// View HID Devices
-//var HID = require('node-hid');
-//console.log(HID.devices());
-
-
 // [Varables]
 // =====================================================
-
-
+debug = false;		// if debug output should be shown, use option -verbose to enable
 
 // [Functions]
 // =====================================================
@@ -51,12 +45,14 @@ module.exports = function(options, callback) {
 	options.socketAddress = get(options, 'socketAddress', 'localhost');
 	options.socketPort = get(options, 'socketPort', 8000);
 	options.controllerType = get(options, 'controllerType', 'Grbl');
-	options.cloneController = get(options, 'clone', 'no');
     options.accessTokenLifetime = get(options, 'accessTokenLifetime', '30d');
-
     var pendant_started = false;
 
-    // Logging Message
+	// View HID Devices
+	if (options.verbose)
+		console.log(HID.devices());
+
+// Logging Message
     console.log("Waiting for Pendant to connect... please press the PS button on the DS3 controller.");
 
     // [Function] check for controller to conect (show up in devices), then start services. Kill services on disconect.

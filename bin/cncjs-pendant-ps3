@@ -19,7 +19,8 @@ program
 	.option('--socket-address <address>', 'socket address or hostname', 'localhost')
 	.option('--socket-port <port>', 'socket port', 8000)
     .option('--access-token-lifetime <lifetime>', 'access token lifetime in seconds or a time span string', '30d')
-    .option('--clone', 'if using a clone ps3 controller and are getting write errors');
+    .option('--clone', 'if using a clone ps3 controller and are getting write errors')
+    .option('-v, --verbose', 'verbose (debug) output');
 program.parse(process.argv);
 
 var options = {
@@ -31,7 +32,8 @@ var options = {
     socketPort: program.socketPort,
     controllerType: program.controllerType,
     accessTokenLifetime: program.accessTokenLifetime,
-    clone: program.clone
+    clone: program.clone,
+    verbose: program.verbose
 };
 
 if (options.list) {

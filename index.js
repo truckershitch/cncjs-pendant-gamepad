@@ -23,21 +23,6 @@ const dualShock = require('dualshock-controller'); // https://www.npmjs.com/pack
 // [Functions]
 // =====================================================
 
-// Send message to the socket server
-const sendMessage = function(command, port, options) {
-	if (options.fakeSocket)
-		console.log("Message " + command + ": " + options);
-	else
-		socket.emit(command, port, options);
-}
-
-const receiveMessage = function(msg, callback) {
-	if (!options.fakeSocket)
-		socket.on(msg, callback);
-	else
-		console.log('Listener set up for ' + msg + ': ignoring for fake socket');
-}
-
 // Generate Token
 const generateAccessToken = function(payload, secret, expiration) {
     const token = jwt.sign(payload, secret, {
@@ -54,16 +39,23 @@ const getUserHome = function() {
 
 // Pass User Defined Options
 module.exports = function(options, callback) {
-    // options = options || {};
-    // options.secret = get(options, 'secret', process.env['CNCJS_SECRET']);
-	// options.baudrate = get(options, 'baudrate', 115200);
-	// options.socketAddress = get(options, 'socketAddress', 'localhost');
-	// options.socketPort = get(options, 'socketPort', 8000);
-	// options.controllerType = get(options, 'controllerType', 'Grbl');
-	// options.accessTokenLifetime = get(options, 'accessTokenLifetime', '30d');
-	// options.verbose = get(options, 'verbose', false);
-	// options.clone = get(options, 'clone', false);
 	
+	// handles sending messages to the cncjs socket server, or displaying on screen when using --fakeSocket option
+	const sendMessage = function(command, port, pars) {
+		if (options.fakeSocket)
+			console.log("Message " + command + ": " + pars);
+		else
+			socket.emit(command, port, pars);
+	}
+
+	// handle receiving messages from cncjs socket server, or faking out for --fakeSocket option
+	const receiveMessage = function(msg, callback) {
+		if (!options.fakeSocket)
+			socket.on(msg, callback);
+		else
+			console.log('Listener set up for ' + msg + ': ignoring for fake socket');
+	}
+
     var pendant_started = false;
 
     // [Function] check for controller to connect (show up in devices), then start services. Kill services on disconect.
@@ -72,7 +64,7 @@ module.exports = function(options, callback) {
 	function checkController(socket, controller) {
 		// Get HID Devices
 		var devices = HID.devices();
-		if (options.verbose) {
+		if (options.verbose && !pendant_started) {
 			console.log("Devices discovered:");
 			console.log(devices);
 		}
@@ -536,7 +528,7 @@ module.exports = function(options, callback) {
 		var move_y_axis = 0;
 		var move_z_axis = 0;
 
-		// Set Movement of Gantry Based on DPad, and Z-Imput from other buttons
+		// Set Movement of Gantry Based on DPad, and Z-Input from other buttons
 		function dpad(axis, direction, name) {
 			if (l2) {
 				// Fast

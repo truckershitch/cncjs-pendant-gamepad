@@ -26,28 +26,25 @@
 // SOFTWARE.
 
 module.exports = class {
-    sendMessage = null;
-    options = null;
-
     constructor(options, sendMessage) {
-        _sendMessage = messageHandler;
-        _options = options;
+        this.sendMessage = messageHandler;
+        this.options = options;
     }
 
     probe() {
         console.log('Options are:');
-        console.log(options);
-        sendMessage('command', options.port, 'gcode', 'G91');
-        sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
-        sendMessage('command', options.port, 'gcode', 'G90');
-        sendMessage('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
-        sendMessage('command', options.port, 'gcode', 'G91');
-        sendMessage('command', options.port, 'gcode', 'G0 Z3');
-        sendMessage('command', options.port, 'gcode', 'G90');
+        console.log(this.options);
+        this.sendMessage('command', this.options.port, 'gcode', 'G91');
+        this.sendMessage('command', this.options.port, 'gcode', 'G38.2 Z-15.001 F120');
+        this.sendMessage('command', this.options.port, 'gcode', 'G90');
+        this.sendMessage('command', this.options.port, 'gcode', 'G10 L20 P1 Z15.001');
+        this.sendMessage('command', this.options.port, 'gcode', 'G91');
+        this.sendMessage('command', this.options.port, 'gcode', 'G0 Z3');
+        this.sendMessage('command', this.options.port, 'gcode', 'G90');
     }
 
     moveRelative(x=0, y=0, z=0) {
-        if (options.verbose)
+        if (this.options.verbose)
             console.log('moveRelative verbose');
         else
             console.log('moveRelative without verbose');

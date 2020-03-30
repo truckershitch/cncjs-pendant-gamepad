@@ -41,11 +41,11 @@ const getUserHome = function() {
 module.exports = function(options, callback) {
 	
 	// handles sending messages to the cncjs socket server, or displaying on screen when using --fakeSocket option
-	const sendMessage = function(command, port, pars) {
+	const sendMessage = function(eventName, a1, a2, a3, a4, a5) {
 		if (options.fakeSocket)
-			console.log("Message " + command + ": " + pars);
+			console.log("Message " + command + ": " + a2 + ", " + a3 + ", " + a4 + ", " + a5);
 		else
-			socket.emit(command, port, pars);
+			socket.emit(eventName, a1, a2, a3, a4, a5);
 	}
 
 	// handle receiving messages from cncjs socket server, or faking out for --fakeSocket option

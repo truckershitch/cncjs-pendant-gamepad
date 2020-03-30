@@ -14,7 +14,7 @@ const io = require('socket.io-client');  	// Socket.io connection to CNC
 const jwt = require('jsonwebtoken');
 const get = require('lodash.get');
 const HID = require('node-hid');
-const gcode = require('bin/gcode');
+const gcode = require('./gcode');
 const dualShock = require('dualshock-controller'); // https://www.npmjs.com/package/dualshock-controller
 
 // Generate Token
@@ -56,7 +56,7 @@ module.exports = function(options, callback) {
 	const receiveMessage = function(msg, callback) {
 		if (!options.fakeSocket)
 			socket.on(msg, callback);
-		else
+		else if (options.verbose)
 			console.log('Listener set up for ' + msg + ': ignored; --fakeSocket option used');
 	}
 
@@ -81,7 +81,7 @@ module.exports = function(options, callback) {
 		devices.forEach(function(device) {
 			// Detect DualShock 3 Controller HID
 			if (!pendant_started && (device.vendorId == 1356 && device.productId == 616)) {
-				console.log("Pendant " + device.vendorId + " | " + device.productId + " connected");
+				console.log("Pendant connected (vendor " + device.vendorId + ", id " + device.productId + ")");
 				
 				// Start Socket Connection & Controller Conection
 				pendant_started = true;
@@ -91,8 +91,7 @@ module.exports = function(options, callback) {
 
 		// if the first attempt, and no controllers found, tell the user they may need to press the PS button
 		if (firstCheck && !pendant_started) {
-			console.log("No PS3 controllers found");
-			console.log("Make sure your controller is connected by pressing the PS button in the center of the controller");
+			console.log("No Dualshock controllers found; make sure your controller is connected by pressing center round (PS or P3) button");
 			firstCheck = false;
 		}
 	}
@@ -381,13 +380,14 @@ module.exports = function(options, callback) {
 		// Probe
 		controller.on('square:press', function(data) {
 			if (r1) {
-				sendMessage('command', options.port, 'gcode', 'G91');
-				sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
-				sendMessage('command', options.port, 'gcode', 'G90');
-				sendMessage('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
-				sendMessage('command', options.port, 'gcode', 'G91');
-				sendMessage('command', options.port, 'gcode', 'G0 Z3');
-				sendMessage('command', options.port, 'gcode', 'G90');
+				gcode.probe();
+				// sendMessage('command', options.port, 'gcode', 'G91');
+				// sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
+				// sendMessage('command', options.port, 'gcode', 'G90');
+				// sendMessage('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
+				// sendMessage('command', options.port, 'gcode', 'G91');
+				// sendMessage('command', options.port, 'gcode', 'G0 Z3');
+				// sendMessage('command', options.port, 'gcode', 'G90');
 
 				if (options.verbose)
 					console.log('probe:' + data);

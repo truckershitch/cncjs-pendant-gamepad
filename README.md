@@ -1,7 +1,7 @@
 # cncjs-pendant-ps3
 Dual Shock / PS3 Bluetooth Remote Pendant for CNCjs
 
-Use [Playstation 3 Controller](https://www.playstation.com/en-us/explore/accessories/dualshock-3-ps3/) wirelessly over bluetooth to control CNC from the host device (raspberry pi). [PS3 CNC Control Button Map](https://docs.google.com/drawings/d/1DMzfBk5DSvjJ082FrerrfmpL19-pYAOcvcmTbZJJsvs/edit?usp=sharing)
+Use [Playstation 3 Controller](https://www.playstation.com/en-us/explore/accessories/dualshock-3-ps3/) (wired using USB or wirelessly over bluetooth) to control CNCJS from the host device (raspberry pi).
 
 [Remote Pendant (Playstation 3 Dualshock Controller / SIXAXIS Controller)](https://github.com/cheton/cnc/issues/103)
 
@@ -16,6 +16,12 @@ This fork has been made to make several improvements.  _This is a work-in-progre
 * Some improvements to documentation and help to avoid some pitfalls I have encountered
 
 If time permits, I would like to change this to provide the command mappings via a configuration file, so that multiple formats (Grbl, Marlin, etc) and button options can be supported without code changes.  We will see if that time ever becomes available...
+
+## Button map
+
+![Button Map](images/cncjs-button-map.jpg)
+
+[PS3 CNC Control Button Map](https://docs.google.com/drawings/d/1DMzfBk5DSvjJ082FrerrfmpL19-pYAOcvcmTbZJJsvs/edit?usp=sharing)
 
 ## Playstation Controller Setup ( general guide to connect hardware & setup )
 

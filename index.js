@@ -71,7 +71,8 @@ module.exports = function(options, callback) {
 
 		// if the first attempt, and no controllers found, tell the user they may need to press the PS button
 		if (firstCheck && !pendant_started) {
-			console.log("No PS3 controllers found.  Please press the PS button on the controller.");
+			console.log("No PS3 controllers found");
+			console.log("Make sure your controller is connected by pressing the PS button in the center of the controller");
 			firstCheck = false;
 			if (options.verbose) {
 				console.log("Devices discovered:");
@@ -199,55 +200,65 @@ module.exports = function(options, callback) {
 		var psx = false;
 		controller.on('psxButton:press', function(data) {
 			psx = true;
-			console.log(data + '|' + psx);
+			if (options.verbose)
+				console.log(data + '|' + psx);
 		});
 		controller.on('psxButton:release', function(data) {
 			psx = false;
-			console.log(data + '|' + psx);
+			if (options.verbose)
+				console.log(data + '|' + psx);
 		});
 
 		// L1
 		var l1 = false;
 		controller.on('l1:press', function(data) {
 			l1 = true;
-			console.log(data + '|' + l1);
+			if (options.verbose)
+				console.log(data + '|' + l1);
 		});
 		controller.on('l1:release', function(data) {
 			l1 = false;
-			console.log(data + '|' + l1);
+			if (options.verbose)
+				console.log(data + '|' + l1);
 		});
 
 		// R1
 		var r1 = false;
 		controller.on('r1:press', function(data) {
 			r1 = true;
-			console.log(data + '|' + r1);
+			if (options.verbose)
+				console.log(data + '|' + r1);
 		});
 		controller.on('r1:release', function(data) {
 			r1 = false;
-			console.log(data + '|' + r1);
+			if (options.verbose)
+				console.log(data + '|' + r1);
 		});
 
 		// L2
 		var l2 = false;
 		controller.on('l2:press', function(data) {
 			l2 = true;
-			console.log(data + '|' + l2);
+			if (options.verbose)
+				console.log(data + '|' + l2);
 		});
 		controller.on('l2:release', function(data) {
 			l2 = false;
-			console.log(data + '|' + l2);
+			if (options.verbose)
+				console.log(data + '|' + l2);
 		});
 
 		// R2
 		var r2 = false;
 		controller.on('r2:press', function(data) {
 			r2 = true;
-			console.log(data + '|' + r2);
+			if (options.verbose)
+				console.log(data + '|' + r2);
 		});
 		controller.on('r2:release', function(data) {
 			r2 = false;
-			console.log(data + '|' + r2);
+			if (options.verbose)
+				console.log(data + '|' + r2);
 		});
 
 		// Unlock
@@ -286,7 +297,8 @@ module.exports = function(options, callback) {
 		controller.on('triangle:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'start');
-				console.log('cyclestart:' + data);
+				if (options.verbose)
+					console.log('cyclestart:' + data);
 			}
 		});
 
@@ -294,7 +306,8 @@ module.exports = function(options, callback) {
 		controller.on('square:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'stop');
-				console.log('feedhold:' + data);
+				if (options.verbose)
+					console.log('feedhold:' + data);
 			}
 		});
 
@@ -303,7 +316,8 @@ module.exports = function(options, callback) {
 		controller.on('circle:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'pause');
-				console.log('pause:' + data);
+				if (options.verbose)
+					console.log('pause:' + data);
 			}
 		});
 
@@ -311,7 +325,8 @@ module.exports = function(options, callback) {
 		controller.on('x:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'resume');
-				console.log('unlock:' + data);
+				if (options.verbose)
+					console.log('unlock:' + data);
 			}
 		});
 
@@ -346,7 +361,8 @@ module.exports = function(options, callback) {
 				socket.emit('command', options.port, 'gcode', 'G0 Z3');
 				socket.emit('command', options.port, 'gcode', 'G90');
 
-				console.log('probe:' + data);
+				if (options.verbose)
+					console.log('probe:' + data);
 			}
 		});
 
@@ -518,7 +534,8 @@ module.exports = function(options, callback) {
 			}
 
 			// Debugging
-			console.log(name + ': ' + direction + ' | ' + axis + ' | ' +  + l1 + r1);
+			if (options.verbose)
+				console.log(name + ': ' + direction + ' | ' + axis + ' | ' +  + l1 + r1);
 		}
 
 		// Set Movemtn Varables
@@ -560,7 +577,8 @@ module.exports = function(options, callback) {
 				}
 			}
 
-			console.log("DPad Set Movemnet: " + move_x_axis + ': ' + move_y_axis + "   | " + speed)
+			if (options.verbose)
+				console.log("DPad Set Movemnet: " + move_x_axis + ': ' + move_y_axis + "   | " + speed)
 		}
 
 		// Move Gantry X | Y
@@ -574,7 +592,8 @@ module.exports = function(options, callback) {
 				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
 
 				// Debuging
-				console.log("DPad MOVE: " + move_y_axis + ': ' + move_y_axis + ': ' + move_z_axis);
+				if (options.verbose)
+					console.log("DPad MOVE: " + move_y_axis + ': ' + move_y_axis + ': ' + move_z_axis);
 
 				// Reset Axis Varables
 				move_x_axis -= move_x_axis;
@@ -639,7 +658,8 @@ module.exports = function(options, callback) {
 			if (r1 && psx) {
 				socket.emit('command', options.port, 'gcode', 'M3 S1000');
 				spindle = true;
-				console.log('Spindle: ' + spindle);
+				if (options.verbose)
+					console.log('Spindle: ' + spindle);
 			}
 		});
 
@@ -648,7 +668,8 @@ module.exports = function(options, callback) {
 			if (!psx && spindle) {
 				socket.emit('command', options.port, 'gcode', 'M5');
 				spindle = false;
-				console.log('Spindle: ' + spindle);
+				if (options.verbose)
+					console.log('Spindle: ' + spindle);
 			}
 		});
 
@@ -679,7 +700,8 @@ module.exports = function(options, callback) {
 				ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			}
 
-			console.log('L] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
+			if (options.verbose)
+				console.log('L] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
 			/*
 			// Runble Controler Beefly
@@ -701,7 +723,8 @@ module.exports = function(options, callback) {
 				ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			}
 
-			console.log('R] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
+			if (options.verbose)
+				console.log('R] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
 			/*
 			// Runble Controler Beefly
@@ -716,7 +739,8 @@ module.exports = function(options, callback) {
 
 		// Analog Sticks
 		controller.on('left:move', function(data) {
-			console.log('left Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
+			if (options.verbose)
+				console.log('left Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
 			if (stick_left) {
 				left_x = data.x - 128
 				left_y = (data.y * -1) +128
@@ -725,10 +749,12 @@ module.exports = function(options, callback) {
 				left_y = 0;
 			}
 
-			console.log('stick-left: ' +  Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_left)
+			if (options.verbose)
+				console.log('stick-left: ' +  Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_left)
 		});
 		controller.on('right:move', function(data) {
-			console.log('right Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
+			if (options.verbose)
+				console.log('right Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
 			if (stick_right) {
 
 				right_x = data.x - 128
@@ -738,7 +764,8 @@ module.exports = function(options, callback) {
 				right_y = 0;
 			}
 
-			console.log('stick-right: ' + Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_right)
+			if (options.verbose)
+				console.log('stick-right: ' + Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_right)
 		});
 
 		// [Function] map(value, fromLow, fromHigh, toLow, toHigh)   https://www.arduino.cc/en/Reference/Map
@@ -770,7 +797,8 @@ module.exports = function(options, callback) {
 				// Move based on stick imput and mapping, need to add exponital curve.
 				socket.emit('command', options.port, 'gcode', 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4)); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
 				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
-				console.log('setInterval: x' + sum_x + ' y' + sum_y + ' | ' + 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4));
+				if (options.verbose)
+					console.log('setInterval: x' + sum_x + ' y' + sum_y + ' | ' + 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4));
 			}
 		}
 
@@ -843,10 +871,12 @@ module.exports = function(options, callback) {
 
 		});
 		controller.on('connection:change', function (value) {
-			console.log('connection:change:' + value);
+			if (options.verbose)
+				console.log('connection:change:' + value);
 		});
 		controller.on('charging:change', function (value) {
-			console.log('connection:change:' + value);
+			if (options.verbose)
+				console.log('connection:change:' + value);
 		});
 
 /*

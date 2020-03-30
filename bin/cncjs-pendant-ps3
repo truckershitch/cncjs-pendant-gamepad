@@ -19,8 +19,9 @@ program
 	.option('--socket-address <address>', 'socket address or hostname', 'localhost')
 	.option('--socket-port <port>', 'socket port', 8000)
     .option('--access-token-lifetime <lifetime>', 'access token lifetime in seconds or a time span string', '30d')
-    .option('--clone', 'if using a clone ps3 controller and are getting write errors')
-    .option('-v, --verbose', 'verbose (debug) output');
+    .option('--clone', 'use when you have a clone ps3 controller and are getting write errors')
+    .option('-v, --verbose', 'display verbose (debugging) messages')
+    .option('-f, --fake-socket', 'use a fake socket server and display cncjs messages to console instead');
 program.parse(process.argv);
 
 var options = {
@@ -33,7 +34,8 @@ var options = {
     controllerType: program.controllerType,
     accessTokenLifetime: program.accessTokenLifetime,
     clone: program.clone,
-    verbose: program.verbose
+    verbose: program.verbose,
+    fake: program.fake
 };
 
 if (options.list) {

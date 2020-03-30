@@ -22,6 +22,15 @@ const dualShock = require('dualshock-controller'); // https://www.npmjs.com/pack
 
 // [Functions]
 // =====================================================
+
+// Send message to the socket server
+const sendMessage = function(command, port, options) {
+	if (options.fake)
+		console.log("Message " + command + ": " + options);
+	else
+		socket.emit(command, port, options);
+}
+
 // Generate Token
 const generateAccessToken = function(payload, secret, expiration) {
     const token = jwt.sign(payload, secret, {
@@ -111,7 +120,7 @@ module.exports = function(options, callback) {
 			if (options.verbose)
 				console.log('Sending open request for ' + options.port + ' at baud rate ' + options.baudrate);
 
-			socket.emit('open', options.port, {
+			sendMessage('open', options.port, {
 				baudrate: Number(options.baudrate),
 				controllerType: options.controllerType
 			});
@@ -264,14 +273,14 @@ module.exports = function(options, callback) {
 		// Unlock
 		controller.on('start:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'unlock');
+				sendMessage('command', options.port, 'unlock');
 			}
 		});
 
 		// Reset
 		controller.on('select:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'reset');
+				sendMessage('command', options.port, 'reset');
 			}
 		});
 
@@ -279,14 +288,14 @@ module.exports = function(options, callback) {
 		// Cyclestart
 		controller.on('start:press', function(data) {
 			if (!psx) {
-				socket.emit('command', options.port, 'cyclestart');
+				sendMessage('command', options.port, 'cyclestart');
 			}
 		});
 
 		// Feedhold
 		controller.on('select:press', function(data) {
 			if (!psx) {
-				socket.emit('command', options.port, 'feedhold');
+				sendMessage('command', options.port, 'feedhold');
 			}
 		});
 
@@ -296,7 +305,7 @@ module.exports = function(options, callback) {
 		// Start
 		controller.on('triangle:press', function(data) {
 			if (!r1 && !l1 && !psx) {
-				socket.emit('command', options.port, 'start');
+				sendMessage('command', options.port, 'start');
 				if (options.verbose)
 					console.log('cyclestart:' + data);
 			}
@@ -305,7 +314,7 @@ module.exports = function(options, callback) {
 		// Stop
 		controller.on('square:press', function(data) {
 			if (!r1 && !l1 && !psx) {
-				socket.emit('command', options.port, 'stop');
+				sendMessage('command', options.port, 'stop');
 				if (options.verbose)
 					console.log('feedhold:' + data);
 			}
@@ -315,7 +324,7 @@ module.exports = function(options, callback) {
 		// Pause
 		controller.on('circle:press', function(data) {
 			if (!r1 && !l1 && !psx) {
-				socket.emit('command', options.port, 'pause');
+				sendMessage('command', options.port, 'pause');
 				if (options.verbose)
 					console.log('pause:' + data);
 			}
@@ -324,7 +333,7 @@ module.exports = function(options, callback) {
 		// Resume
 		controller.on('x:press', function(data) {
 			if (!r1 && !l1 && !psx) {
-				socket.emit('command', options.port, 'resume');
+				sendMessage('command', options.port, 'resume');
 				if (options.verbose)
 					console.log('unlock:' + data);
 			}
@@ -353,13 +362,13 @@ module.exports = function(options, callback) {
 		// Probe
 		controller.on('square:press', function(data) {
 			if (r1) {
-				socket.emit('command', options.port, 'gcode', 'G91');
-				socket.emit('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
-				socket.emit('command', options.port, 'gcode', 'G90');
-				socket.emit('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
-				socket.emit('command', options.port, 'gcode', 'G91');
-				socket.emit('command', options.port, 'gcode', 'G0 Z3');
-				socket.emit('command', options.port, 'gcode', 'G90');
+				sendMessage('command', options.port, 'gcode', 'G91');
+				sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
+				sendMessage('command', options.port, 'gcode', 'G90');
+				sendMessage('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
+				sendMessage('command', options.port, 'gcode', 'G91');
+				sendMessage('command', options.port, 'gcode', 'G0 Z3');
+				sendMessage('command', options.port, 'gcode', 'G90');
 
 				if (options.verbose)
 					console.log('probe:' + data);
@@ -407,28 +416,28 @@ module.exports = function(options, callback) {
 		// Triangle
 		controller.on('triangle:press', function(data) {
 			if (r2) {
-				socket.emit('command', options.port, '');
+				sendMessage('command', options.port, '');
 			}
 		});
 
 		// Square
 		controller.on('square:press', function(data) {
 			if (r2) {
-				socket.emit('command', options.port, '');
+				sendMessage('command', options.port, '');
 			}
 		});
 
 		// Circle
 		controller.on('circle:press', function(data) {
 			if (r2) {
-				socket.emit('command', options.port, '');
+				sendMessage('command', options.port, '');
 			}
 		});
 
 		// X
 		controller.on('x:press', function(data) {
 			if (r2) {
-				socket.emit('command', options.port, '');
+				sendMessage('command', options.port, '');
 			}
 		});
 */
@@ -440,28 +449,28 @@ module.exports = function(options, callback) {
 		// M7
 		controller.on('triangle:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'gcode', 'M7');
+				sendMessage('command', options.port, 'gcode', 'M7');
 			}
 		});
 
 		// M9
 		controller.on('square:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'gcode', 'M9');
+				sendMessage('command', options.port, 'gcode', 'M9');
 			}
 		});
 
 		// M8
 		controller.on('circle:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'gcode', 'M8');
+				sendMessage('command', options.port, 'gcode', 'M8');
 			}
 		});
 
 		// Home
 		controller.on('x:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'homing');
+				sendMessage('command', options.port, 'homing');
 			}
 		});
 
@@ -472,8 +481,8 @@ module.exports = function(options, callback) {
 		// Raise Z
 		controller.on('triangle:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'gcode', 'G91 G0 Z0.1'); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
-				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
+				sendMessage('command', options.port, 'gcode', 'G91 G0 Z0.1'); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
+				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
 
 				console.log('Raising Z:' + data);
 			}
@@ -490,13 +499,13 @@ module.exports = function(options, callback) {
 		// Probe
 		controller.on('circle:press', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'gcode', 'G91');
-				socket.emit('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
-				socket.emit('command', options.port, 'gcode', 'G90');
-				socket.emit('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
-				socket.emit('command', options.port, 'gcode', 'G91');
-				socket.emit('command', options.port, 'gcode', 'G0 Z3');
-				socket.emit('command', options.port, 'gcode', 'G90');
+				sendMessage('command', options.port, 'gcode', 'G91');
+				sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
+				sendMessage('command', options.port, 'gcode', 'G90');
+				sendMessage('command', options.port, 'gcode', 'G10 L20 P1 Z15.001');
+				sendMessage('command', options.port, 'gcode', 'G91');
+				sendMessage('command', options.port, 'gcode', 'G0 Z3');
+				sendMessage('command', options.port, 'gcode', 'G90');
 
 				console.log('probe:' + data);
 			}
@@ -505,8 +514,8 @@ module.exports = function(options, callback) {
 		// Lower Z
 		controller.on('x:hold', function(data) {
 			if (psx) {
-				socket.emit('command', options.port, 'gcode', 'G91 G0 Z-0.1'); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
-				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
+				sendMessage('command', options.port, 'gcode', 'G91 G0 Z-0.1'); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
+				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
 
 				console.log('Lowering Z:' + data);
 			}
@@ -588,8 +597,8 @@ module.exports = function(options, callback) {
 			if (move_x_axis != 0 || move_y_axis != 0 || move_z_axis != 0)
 			{
 				// Send gCode
-				socket.emit('command', options.port, 'gcode', 'G91 G0 X' + move_x_axis + " Y" + move_y_axis + " Z" + move_z_axis);
-				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
+				sendMessage('command', options.port, 'gcode', 'G91 G0 X' + move_x_axis + " Y" + move_y_axis + " Z" + move_z_axis);
+				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
 
 				// Debuging
 				if (options.verbose)
@@ -656,7 +665,7 @@ module.exports = function(options, callback) {
 		// Start Spindle
 		controller.on('r2:press', function(data) {
 			if (r1 && psx) {
-				socket.emit('command', options.port, 'gcode', 'M3 S1000');
+				sendMessage('command', options.port, 'gcode', 'M3 S1000');
 				spindle = true;
 				if (options.verbose)
 					console.log('Spindle: ' + spindle);
@@ -666,7 +675,7 @@ module.exports = function(options, callback) {
 		// Stop Spendle
 		controller.on('r2:release', function(data) {
 			if (!psx && spindle) {
-				socket.emit('command', options.port, 'gcode', 'M5');
+				sendMessage('command', options.port, 'gcode', 'M5');
 				spindle = false;
 				if (options.verbose)
 					console.log('Spindle: ' + spindle);
@@ -704,7 +713,7 @@ module.exports = function(options, callback) {
 				console.log('L] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
 			/*
-			// Runble Controler Beefly
+			// Rumble Controller Briefly
 			ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			setTimeout(function () {
 			    ps3_rumble_left = 0; // 0-1 (Rumble left on/off)
@@ -727,7 +736,7 @@ module.exports = function(options, callback) {
 				console.log('R] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
 			/*
-			// Runble Controler Beefly
+			// Rumble Controller Briefly
 			ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			setTimeout(function () {
 			    ps3_rumble_left = 0; // 0-1 (Rumble left on/off)
@@ -792,11 +801,11 @@ module.exports = function(options, callback) {
 				}
 
 				//!!!!!!!!!!!!!!!!! need to detect if it's in inches or millimetersmm to avoid and overrun in the multiplier this can be done with agreeable status I believe.
-				socket.emit('command', options.port, 'gcode', 'G21');  // set to millimeters
+				sendMessage('command', options.port, 'gcode', 'G21');  // set to millimeters
 
 				// Move based on stick imput and mapping, need to add exponital curve.
-				socket.emit('command', options.port, 'gcode', 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4)); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
-				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
+				sendMessage('command', options.port, 'gcode', 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4)); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
+				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
 				if (options.verbose)
 					console.log('setInterval: x' + sum_x + ' y' + sum_y + ' | ' + 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4));
 			}

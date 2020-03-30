@@ -59,6 +59,10 @@ module.exports = function(options, callback) {
 			console.log('Listener set up for ' + msg + ': ignored; --fakeSocket option used');
 	}
 
+	// set up our abstract gcode emitter
+	var gcode = new Gcode(options, sendMessage);
+
+	// track that we do not yet have a pendant attached
     var pendant_started = false;
 
     // check for controller to connect (show up in devices), then start services. Kill services on disconect.
@@ -379,7 +383,6 @@ module.exports = function(options, callback) {
 		// Probe
 		controller.on('square:press', function(data) {
 			if (r1) {
-				gcode = new Gcode(options);
 				gcode.probe();
 				// sendMessage('command', options.port, 'gcode', 'G91');
 				// sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');

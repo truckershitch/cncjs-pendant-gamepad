@@ -26,11 +26,17 @@
 // SOFTWARE.
 
 module.exports = class {
-    constructor(options) {
+    sendMessage = null;
+    options = null;
 
+    constructor(options, sendMessage) {
+        _sendMessage = messageHandler;
+        _options = options;
     }
 
     probe() {
+        console.log('Options are:');
+        console.log(options);
         sendMessage('command', options.port, 'gcode', 'G91');
         sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
         sendMessage('command', options.port, 'gcode', 'G90');

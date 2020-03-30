@@ -58,7 +58,7 @@ module.exports = class {
     }
 
     // move gantry: relative movement
-    moveGantryRelative(x, y, z, mmPerSec) {
+    moveGantryRelative(x, y, z, mmPerMin) {
         this.sendMessage('command', this.options.port, 'gcode', 'G21');  // set to millimeters
         this.sendMessage('command', this.options.port, 'gcode', 'G91'); // switch to relative
         this.sendMessage('command', this.options.port, 'gcode', 'G1 X' + 

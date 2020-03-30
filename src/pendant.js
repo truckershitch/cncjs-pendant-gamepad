@@ -84,11 +84,14 @@ module.exports = function(options, callback) {
 	// so that we can keep the movement queue in sync with the joystick update intervals
 	const moveGantry = function(x, y, z, ms) {
 		// compute the distance we are going to travel
-		dist = (x^2 + y^2 + z^2)^.5;
-		console.log('Distance to travel to ' + x + ', ' + y + ', ' + z + ' is ' + dist);
-		speed = dist * 1000/ms;
-		console.log('Resulting feedrate is ' + speed);
-		gcode.moveGantryRelative(map(sum_x, 0, 128, 0.0001, 2), map(sum_y, 0, 128, 0.0001, 2), 0, speed);
+		dist = Math.sqrt(x*x + y*y + z*z);
+		// convert to mm/min based on the ms time slice we are working with
+		speed = dist * 60000/ms;
+		// execute the move
+		gcode.moveGantryRelative(x, y, z, speed);
+		
+		if (options.verbose)
+			console.log('moveGantry: x=' + x + ', y=' + y + ', z=' + z + '; distance=' + dist + ' at ' + speed + 'mm/min');
 	}
 
 

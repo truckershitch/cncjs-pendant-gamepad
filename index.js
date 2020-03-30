@@ -807,7 +807,8 @@ module.exports = function(options, callback) {
 				rumbleLeft:  ps3_rumble_left,   // 0-1 (Rumble left on/off)
 				rumbleRight: ps3_rumble_right,   // 0-255 (Rumble right intensity)
 				led: ps3_led // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
-			});
+				});
+			}
 
 			//console.log("ps3_rumble_left: " + ps3_rumble_left);
 			//console.log("ps3_rumble_right: " + ps3_rumble_right);

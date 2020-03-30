@@ -6,10 +6,11 @@ Pendant controller for [Dualshock 3 joystick](https://www.playstation.com/en-us/
 
 This is a fork of the original [cncjs-pendant-ps3 driver](https://github.com/cncjs/cncjs-pendant-ps3), which adds the following features:
 
-* Uses Marlin gcode (no longer Grbl compatible)
+* Abstracted gcode to allow for support of all controllers (not just Grbl).  Currently support has been added for Grbl and Marlin.  If you can, please consider adding support for Smoothie and/or TinyG and do a pull request.
 * Substantial improvements to README documentation
 * Handles clone PS3 controllers with the --clone option (disables rumble and battery LED status)
 * New debugging features, such as --fakeSocket and --verbose
+* Auto-reconnect to pendant if connection fails (instead of killing the program)
 
 --------------------------------------
 
@@ -234,8 +235,6 @@ node bin/cncjs-pendant-ps3 -p /dev/xxx
 cd ~/cncjs-pendant-ps3
 node bin/cncjs-pendant-ps3 -p /dev/ACM0 -b 250000 -clone
 ```
-
-_cmidgley note:_ Changing controller type does not adjust the gcode commands and thereby does not work across all controllers. The original pendant code was tied to grbl, and this fork will likely become tied to marlin, unless time can be found to switch to a more generic (likely configuration file) based system. 
 
 ## First use recommendation
 

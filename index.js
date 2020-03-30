@@ -3,25 +3,19 @@
 // Node.js Playstation 3 / DS3 Controller for CNC.js
 // by Austin St. Aubin <austinsaintaubin@gmail.com>
 // v1.0.9 BETA [2017/03/27]
-// modified by Chris Midgley <chris@koose.com> for Marlin, and several improvements/bug fixes
-// https://github.com/cheton/cnc/issues/103
-// [PS3 CNC Control Button Map](https://docs.google.com/drawings/d/1DMzfBk5DSvjJ082FrerrfmpL19-pYAOcvcmTbZJJsvs/edit?usp=sharing)
-// USAGE: ./cncjs-pendant-ps3 -p "/dev/ttyUSB0"
+// modified by Chris Midgley <chris@koose.com> [2020]
 
-// [Dependacies]
+// USAGE EXAMPLE: ./cncjs-pendant-ps3 -p "/dev/ttyUSB0"
+// SEE ALL OPTIONS: ./cncjs-pendant-ps3 -h
+
 const fs = require('fs');
 const path = require('path');
-const io = require('socket.io-client');  // Socket.io connection to CNC
+const io = require('socket.io-client');  	// Socket.io connection to CNC
 const jwt = require('jsonwebtoken');
 const get = require('lodash.get');
 const HID = require('node-hid');
+const gcode = require('bin/gcode');
 const dualShock = require('dualshock-controller'); // https://www.npmjs.com/package/dualshock-controller
-
-// [Varables]
-// =====================================================
-
-// [Functions]
-// =====================================================
 
 // Generate Token
 const generateAccessToken = function(payload, secret, expiration) {
@@ -68,7 +62,7 @@ module.exports = function(options, callback) {
 
     var pendant_started = false;
 
-    // [Function] check for controller to connect (show up in devices), then start services. Kill services on disconect.
+    // check for controller to connect (show up in devices), then start services. Kill services on disconect.
 	setInterval(checkController, 1000);
 	firstCheck = true;
 	function checkController(socket, controller) {
@@ -802,7 +796,7 @@ module.exports = function(options, callback) {
 				console.log('stick-right: ' + Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_right)
 		});
 
-		// [Function] map(value, fromLow, fromHigh, toLow, toHigh)   https://www.arduino.cc/en/Reference/Map
+		// map(value, fromLow, fromHigh, toLow, toHigh)   https://www.arduino.cc/en/Reference/Map
 		function map(x, in_min, in_max, out_min, out_max)
 		{
 		  return Number((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);

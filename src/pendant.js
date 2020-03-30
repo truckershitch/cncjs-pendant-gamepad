@@ -75,6 +75,11 @@ module.exports = function(options, callback) {
 			console.log('Listener set up for ' + msg + ': ignored; --fakeSocket option used');
 	}
 
+	// simple map function to scale a number between a known set of ranges
+	const map = function(x, in_min, in_max, out_min, out_max) {
+		return Number((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+	}
+	
 	// move the gantry based on a distance and a computed feedrate that matches a specific amount of time.  This is used
 	// so that we can keep the movement queue in sync with the joystick update intervals
 	const moveGantry = function(x, y, z, ms) {
@@ -761,12 +766,6 @@ module.exports = function(options, callback) {
 			if (options.verbose)
 				console.log('stick-right: ' + Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_right)
 		});
-
-		// simple map function to scale a number between a known set of ranges
-		function map(x, in_min, in_max, out_min, out_max)
-		{
-		  return Number((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
-		}
 
 		// move gantry based on sticks at a regular interval
 		setInterval(stickMovement, 50);

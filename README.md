@@ -141,10 +141,12 @@ sudo udevadm control --reload-rules
 exit
 ```
 
-# QUICK FIX for node-hid hidraw... PLEASE HELP IF YOU KNOW FIX
-```
-# I am having issues with node-hid --driver=hidraw not seeming to work... quickest fix is to reinstall, node-hid --driver=hidraw 
+# QUICK FIX for node-hid hidraw... 
+_cmidgley note_: I did not have this issue, so I can't explain it.  If somebody else does, please let me know whatever you can learn about the conditions and steps to reproduce/fix so we can improve this part of the documentation
 
+I am having issues with node-hid --driver=hidraw not seeming to work... quickest fix is to reinstall, node-hid --driver=hidraw 
+
+```
 # Reinstall (node-hid --driver=hidraw) on cncjs-pendant-ps3
 cd /usr/lib/node_modules/cncjs-pendant-ps3/
 sudo npm install node-hid --driver=hidraw --build-from-source --unsafe-perm

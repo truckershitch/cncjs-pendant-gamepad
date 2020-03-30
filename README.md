@@ -115,12 +115,26 @@ jstest /dev/input/js0
 
 ## Install supporting tools
 
+_cmidgley note_: The following will install the standard (original) package.  Skip over this and instead do the next section where the github repo is cloned.
+
+```
 sudo apt-get install -y libudev-dev libusb-1.0-0 libusb-1.0-0-dev build-essential git
 sudo apt-get install -y gcc-4.8 g++-4.8 && export CXX=g++-4.8
 
-# Install Pendant Package
+# Install cncjs-pendant-ps3
 sudo npm install -g cncjs-pendant-ps3 --unsafe-perm  # Install Globally
-_cmidgley note_: The above installs the NPM package, but to use this fork you must install this fork directly.  
+```
+_cmidgley note_: This will install this repo version instead of the original version
+
+```
+# Clone the github repo for cmidgley/cncjs-pendant-ps3
+cd ~
+git clone https://github.com/cmidgley/cncjs-pendant-ps3.git
+cd cncjs-pendant-ps3
+npm install -g
+```
+
+Note that there will be quite a few warnings, such as deprecated modules and compiler warnings.  You can ignore this for now, though someday work should be done fix this...!  Anyone want to attack this problem?!
 
 ### If NOT installed globally, Install node-hid with hidraw support (https://github.com/rdepena/node-dualshock-controller)
 
@@ -174,7 +188,7 @@ The program accepts several optional arguments:
 * accessTokenLifetime <lifetime>: How long the access token should be generated, can generally be ignored.  In seconds or a time span string (default: 30d)
 * --help: bring up a help listing of all options
 
-You directly run cncjs-pendant-ps3 from the command line using  `<path-to-cncjs-pendant-ps3>/cncjs-pendant-ps3 -p //dev/xxx` where xxx is the device on the server that connects to your CNC controller (Grbl, Marlin, etc), such as /dev/ttyUSB0 or /dev/ACM0, yyy. You may need other options, such as -b (baud rate) or -t (controller type) - see above.  Note that the pendent device will be automatically detected and is not provided as an option to cnc-pendant-ps3.
+You directly run cncjs-pendant-ps3 from the command line using  `<path-to-cncjs-pendant-ps3>/cncjs-pendant-ps3 -p /dev/xxx` (or if using a local copy, you can run it from the project directory using `node bin/cncjs-pendant-ps3 -p /dev/xxx`) where xxx is the device on the server that connects to your CNC controller (Grbl, Marlin, etc), such as /dev/ttyUSB0 or /dev/ACM0, yyy. You may need other options, such as -b (baud rate) or -t (controller type) - see above.  Note that the pendent device will be automatically detected and is not provided as an option to cnc-pendant-ps3.
 
 _cmidgley note:_ Changing controller type does not yet adjust the gcode commands and thereby does not work across all controllers. The original pendant code was tied to grbl, and this fork will likely become tied to marlin, unless time can be found to switch to a more generic (likely configuration file) based system. 
 

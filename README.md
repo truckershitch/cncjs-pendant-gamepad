@@ -13,6 +13,7 @@ This is a fork of the original [cncjs-pendant-ps3 driver](https://github.com/cnc
 * Handles clone PS3 controllers with the --clone option (disables rumble and battery LED status)
 * New debugging features, such as --fakeSocket and --verbose
 * Auto-reconnect to pendant if connection fails (instead of killing the program)
+* Added computed feed speed based on distance to travel to have gantry that quickly respond to changes (for Marlin)
 
 --------------------------------------
 

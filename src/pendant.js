@@ -75,6 +75,18 @@ module.exports = function(options, callback) {
 			console.log('Listener set up for ' + msg + ': ignored; --fakeSocket option used');
 	}
 
+	// move the gantry based on a distance and a computed feedrate that matches a specific amount of time.  This is used
+	// so that we can keep the movement queue in sync with the joystick update intervals
+	const moveGantry = function(x, y, z, ms) {
+		// compute the distance we are going to travel
+		dist = (x^2 + y^2 + z^2)^.5;
+		console.log('Distance to travel to ' + x + ', ' + y + ', ' + z + ' is ' + dist);
+		speed = dist * 1000/ms;
+		console.log('Resulting feedrate is ' + speed);
+		gcode.moveGantryRelative(map(sum_x, 0, 128, 0.0001, 2), map(sum_y, 0, 128, 0.0001, 2), 0, speed);
+	}
+
+
 	// TODO: Abstract this further to machine types, and get the controller type from the machine.  This way you
 	// can have an MPCNC set of code different than another machine, or even MPCNC-LASER separate from MPCNC-SPINDLE.
 
@@ -570,9 +582,8 @@ module.exports = function(options, callback) {
 			// do we need to move the gantry?
 			if (move_x_axis != 0 || move_y_axis != 0 || move_z_axis != 0)
 			{
-				// TODO: Speed is being controlled by distance, not feedrate.  At least Marlin requires feedrate, so this needs to be adjusted
-				// send movement g-code
-				gcode.moveGantryRelative(move_x_axis, move_y_axis, move_z_axis);
+				// move gantry, using a speed that does it within our interval rate (so we stay in sync with timing of gantry)
+				moveGantry(move_x_axis, move_y_axis, move_z_axis, 100);
 
 				if (options.verbose)
 					console.log("DPad MOVE: " + move_y_axis + ': ' + move_y_axis + ': ' + move_z_axis);
@@ -775,7 +786,8 @@ module.exports = function(options, callback) {
 					right_x = 0; right_y = 0;
 				}
 
-				gcode.moveGantryRelative(map(sum_x, 0, 128, 0.0001, 2), map(sum_y, 0, 128, 0.0001, 2), 0);
+				// move gantry a distance at a speed consistent with our interval rate
+				moveGantry(map(sum_x, 0, 128, 0.0001, 2), map(sum_y, 0, 128, 0.0001, 2), 0, 50);
 
 				if (options.verbose)
 					console.log('setInterval: x' + sum_x + ' y' + sum_y);

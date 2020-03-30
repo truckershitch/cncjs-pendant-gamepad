@@ -12,9 +12,8 @@ const fs = require('fs');
 const path = require('path');
 const io = require('socket.io-client');  	// Socket.io connection to CNC
 const jwt = require('jsonwebtoken');
-const get = require('lodash.get');
 const HID = require('node-hid');
-const gcode = require('./gcode');
+const Gcode = require('./bin/gcode');
 const dualShock = require('dualshock-controller'); // https://www.npmjs.com/package/dualshock-controller
 
 // Generate Token
@@ -380,6 +379,7 @@ module.exports = function(options, callback) {
 		// Probe
 		controller.on('square:press', function(data) {
 			if (r1) {
+				gcode = new Gcode(options);
 				gcode.probe();
 				// sendMessage('command', options.port, 'gcode', 'G91');
 				// sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');

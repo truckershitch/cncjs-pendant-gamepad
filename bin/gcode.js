@@ -25,8 +25,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function(options, callback) {
-    const probe = function() {
+module.exports = class {
+    constructor(options) {
+
+    }
+
+    probe() {
         sendMessage('command', options.port, 'gcode', 'G91');
         sendMessage('command', options.port, 'gcode', 'G38.2 Z-15.001 F120');
         sendMessage('command', options.port, 'gcode', 'G90');
@@ -35,8 +39,8 @@ module.exports = function(options, callback) {
         sendMessage('command', options.port, 'gcode', 'G0 Z3');
         sendMessage('command', options.port, 'gcode', 'G90');
     }
-    
-    const moveRelative = function(x=0, y=0, z=0) {
+
+    moveRelative(x=0, y=0, z=0) {
         if (options.verbose)
             console.log('moveRelative verbose');
         else

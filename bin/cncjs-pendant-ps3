@@ -19,7 +19,7 @@ program
 	.option('--socket-address <address>', 'socket address or hostname (default: localhost)', 'localhost')
 	.option('--socket-port <port>', 'socket port (default: 8000)', 8000)
     .option('--access-token-lifetime <lifetime>', 'access token lifetime in seconds or a time span string (default: 30d)', '30d')
-    .option('--clone <clone>', 'if using a clone ps3 controller and are getting write errors, set to yes (default: no)', 'no');
+    .option('--clone', 'if using a clone ps3 controller and are getting write errors (default: original controller)');
 program.parse(process.argv);
 
 var options = {
@@ -30,7 +30,7 @@ var options = {
     socketPort: program.socketPort,
     controllerType: program.controllerType,
     accessTokenLifetime: program.accessTokenLifetime,
-    pendantControllerPath: program.pendantControllerPath
+    clone: program.clone
 };
 
 if (options.list) {

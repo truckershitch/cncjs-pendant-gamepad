@@ -1,11 +1,11 @@
 {
   "name": "cncjs-pendant-ps3",
-  "version": "1.0.9",
-  "description": "A cncjs pendant, using Playstation 3 Dualshock Controller / SIXAXIS Controller.",
+  "version": "1.0.9.1",
+  "description": "A cncjs pendant using the Playstation 3 Dualshock Controller / SIXAXIS Controller.",
   "license": "MIT",
   "main": "./index.js",
   "engines": {
-    "node": ">=4"
+    "node": ">=6"
   },
   "bin": {
     "cncjs-pendant-ps3": "./bin/cncjs-pendant-ps3"

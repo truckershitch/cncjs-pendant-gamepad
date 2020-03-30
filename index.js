@@ -3,7 +3,7 @@
 // Node.js Playstation 3 / DS3 Controller for CNC.js
 // by Austin St. Aubin <austinsaintaubin@gmail.com>
 // v1.0.9 BETA [2017/03/27]
-// modified by Chris Midgley <chris@koose.com> for Marlin, and overall improvements/bug fixes
+// modified by Chris Midgley <chris@koose.com> for Marlin, and several improvements/bug fixes
 // https://github.com/cheton/cnc/issues/103
 // [PS3 CNC Control Button Map](https://docs.google.com/drawings/d/1DMzfBk5DSvjJ082FrerrfmpL19-pYAOcvcmTbZJJsvs/edit?usp=sharing)
 // USAGE: ./cncjs-pendant-ps3 -p "/dev/ttyUSB0"
@@ -802,7 +802,7 @@ module.exports = function(options, callback) {
 		// Send Extras Updates
 		setInterval(updateControllerExtras, 500);
 		function updateControllerExtras() {
-			if (options.cloneController == 'no') {
+			if (!options.clone) {
 				controller.setExtras({
 				rumbleLeft:  ps3_rumble_left,   // 0-1 (Rumble left on/off)
 				rumbleRight: ps3_rumble_right,   // 0-255 (Rumble right intensity)

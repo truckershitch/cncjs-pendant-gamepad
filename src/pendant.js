@@ -13,7 +13,7 @@ const path = require('path');
 const io = require('socket.io-client');  	// Socket.io connection to CNC
 const jwt = require('jsonwebtoken');
 const HID = require('node-hid');
-const Gcode = require('./bin/gcode');
+const Gcode = require('./gcode');
 const dualShock = require('dualshock-controller'); // https://www.npmjs.com/package/dualshock-controller
 
 // Generate Token

@@ -27,12 +27,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const io = require('socket.io-client');  	// Socket.io connection to CNC
+const io = require('socket.io-client');
 const jwt = require('jsonwebtoken');
 const HID = require('node-hid');
-const dualShock = require('dualshock-controller'); // https://www.npmjs.com/package/dualshock-controller
+const dualShock = require('dualshock-controller');
 
-// Generate Token
+// generate token
 const generateAccessToken = function(payload, secret, expiration) {
     const token = jwt.sign(payload, secret, {
         expiresIn: expiration
@@ -41,12 +41,12 @@ const generateAccessToken = function(payload, secret, expiration) {
     return token;
 };
 
-// Get secret key from the config file and generate an access token
+// get secret key from the config file and generate an access token
 const getUserHome = function() {
     return process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'];
 };
 
-// Pass User Defined Options
+// main module - provided access to command line options
 module.exports = function(options, callback) {
 	
 	// handles sending messages to the cncjs socket server, or displaying on screen when using --fakeSocket option
@@ -75,6 +75,12 @@ module.exports = function(options, callback) {
 			console.log('Listener set up for ' + msg + ': ignored; --fakeSocket option used');
 	}
 
+	// TODO: Abstract this further to machine types, and get the controller type from the machine.  This way you
+	// can have an MPCNC set of code different than another machine, or even MPCNC-LASER separate from MPCNC-SPINDLE.
+
+	// TODO: When we add button mappings, it likely should also be built around the machine type, so buttons can vary
+	// based on individual machine configurations
+
 	// set up our abstract gcode emitter
 	switch (options.controllerType.toLowerCase()) {
 		case 'grbl':
@@ -92,7 +98,8 @@ module.exports = function(options, callback) {
 	// track that we do not yet have a pendant attached
     var pendant_started = false;
 
-    // check for controller to connect (show up in devices), then start services. Kill services on disconect.
+	// locae and maintain a connection to the controller, including running the services.  This is run on a timer so we can
+	// continue to look for the controller once started, or again afterwards if the controller drops and wants to reconnect
 	setInterval(checkController, 1000);
 	firstCheck = true;
 	function checkController(socket, controller) {
@@ -107,13 +114,13 @@ module.exports = function(options, callback) {
 			console.log(devices);
 		}
 
-		// Find DualShock 3 Controller HID
+		// find Dualshock 3 controller HID
 		devices.forEach(function(device) {
-			// Detect DualShock 3 Controller HID
+			// Dualshock 3 is vendor 1356, product 616
 			if (!pendant_started && (device.vendorId == 1356 && device.productId == 616)) {
-				console.log("Pendant connected (vendor " + device.vendorId + ", id " + device.productId + ")");
+				console.log("Pendant successfully connected");
 				
-				// Start Socket Connection & Controller Conection
+				// start socket connection & controller connection
 				pendant_started = true;
 				connectPendant();
 			}
@@ -121,13 +128,12 @@ module.exports = function(options, callback) {
 
 		// if the first attempt, and no controllers found, tell the user they may need to press the PS button
 		if (firstCheck && !pendant_started) {
-			console.log("No Dualshock controllers found; make sure your controller is connected by pressing center round (PS or P3) button");
+			console.log("No Dualshock controllers found; make sure your controller is connected by pressing the center round (PS or P3) button");
 			firstCheck = false;
 		}
 	}
 
-	// ###########################################################################
-	// Start Socket Connection & Controller Conection
+	// start socket connection and controller connection
 	function connectPendant () {
 		if (!options.secret) {
 	        const cncrc = path.resolve(getUserHome(), '.cncrc');
@@ -140,9 +146,13 @@ module.exports = function(options, callback) {
 	        }
 	    }
 
+		// set up access to the cnc.js socket server, with a valid access token
 	    const token = generateAccessToken({ id: '', name: 'cncjs-pendant' }, options.secret, options.accessTokenLifetime);
 	    const url = 'ws://' + options.socketAddress + ':' + options.socketPort + '?token=' + token;
 
+		// TODO: This should be moved outside of the pendant connection system with a recovery system as well
+
+		// attempt to connect to the server
 		if (options.fakeSocket)
 			console.log('Socket connect to ws://' + options.socketAddress + ':' + options.socketPort + ' ignored; --fakeSocket option used');
 		else {
@@ -157,6 +167,8 @@ module.exports = function(options, callback) {
 	    receiveMessage('connect', () => {
 			if (options.verbose)
 		        console.log('Connected to ' + url);
+
+			// TODO: Verify that we really need this open feature - if not, we can ignore port and clean this up
 
 			// Open port to the CNC controller (command 'open')
 			if (options.verbose)
@@ -173,7 +185,8 @@ module.exports = function(options, callback) {
 	        console.error('Error message received from cncjs - killing connection');
 	        if (socket) {
 				if (!options.fakeSocket)
-	            	socket.destroy();
+					socket.destroy();
+				// TODO: Need to attempt reconnect, and ensure we don't dereference null
 	            socket = null;
 	        }
 	    });
@@ -187,12 +200,12 @@ module.exports = function(options, callback) {
 		// our serial port open request has completed
 	    receiveMessage('serialport:open', function(options) {
 	        console.log('Connected to port "' + options.port + '" (Baud rate: ' + options.baudrate + ')');
-	        callback(null, socket);
 	    });
 
 		// we got an error attempting to open the serial port
 	    receiveMessage('serialport:error', function(options) {
-	        callback(new Error('Error opening serial port "' + options.port + '"'));
+			console.error('Error opening serial port "' + options.port + '"');
+			// TODO: Decide how to handle this failure, but only if we keep the open serial port feature
 	    });
 
 		/*
@@ -207,18 +220,13 @@ module.exports = function(options, callback) {
 	    });
 	    */
 
-		// =====================================================
-		// Play Station 3 Controller / Game Pad
-		// https://www.npmjs.com/package/dualshock-controller
-		// var dualShock = require('dualshock-controller');
-
 		// pass options to init the controller.
-		// var controller = dualShock(
 		controller = dualShock(
 			 {
-				  // you can use a ds4 by uncommenting this line.
+				  // you may be able use a ds4 by using this config instead.  This is untested but if confirmed to work, 
+				  // let me know and I'll make it into a command line option (or feel free to do that yourself and submit
+				  // a pull request)
 				  // config: "dualshock4-generic-driver",
-				  // if using ds4 comment this line.
 				  config : "dualShock3",
 				  // smooths the output from the acelerometers (moving averages) defaults to true
 				  accelerometerSmoothing : true,
@@ -226,32 +234,34 @@ module.exports = function(options, callback) {
 				  analogStickSmoothing : false // DO NOT ENABLE, does not return sticks to center when enabled. 128 x 128
 			 });
 
-		// make sure you add an error event handler
-		// controller.on('connection:change', data => console.log("conection" + data));
-
-		controller.on('connected', function(state) {
-			if (options.verbose)
-				console.log('Controller connected: ' + state);
-		});
-
+		// if we get a controller error, assume we have lost the controller and start scanning for a new one
 		controller.on('error', function(err) {
 			console.log("Controller error: " + err);
 			// indicate that we have lost the pendant
 			pendant_started = false;
 			firstCheck = true;
-			//controller.close();  // Not a function currently, have to kill program.
-			//controller.destroy();
-
-			// used to kill the process, now we attempt to reconnect to the pendant
-			//process.exit();  // Kill Program
 		});
 
-		// ------------------------------------------
-
-		// Safety Switches & Modifyers
+		// set up the output values to the controller for led and rumble.  Note that these are disabled when --clone is used.
 		ps3_led = 0b10000;
 		ps3_rumble_left = 0;
 		ps3_rumble_right = 0;
+
+		// set up the gantry movement axis variables		
+		var move_x_axis = 0;
+		var move_y_axis = 0;
+		var move_z_axis = 0;
+
+
+		// set up control variables to indicate when certain buttons are being pressed.  This is used as a safety to ensure
+		// we don't start actions on the CNC without have some switch thrown
+		
+		// The following variables are true when the respective button is pressed:
+		// psx: PS/P3 button pressed
+		// l1: top left button
+		// l2: bottom left button
+		// r1: top right button
+		// r2: bottom right button
 
 		// psx
 		var psx = false;
@@ -318,6 +328,12 @@ module.exports = function(options, callback) {
 				console.log(data + '|' + r2);
 		});
 
+		// Define the following commands:
+		// START w/psx: unlock
+		// START w/o psx: cyclestart
+		// SELECT w/psx: reset
+		// SELECT w/o psx: freehold
+
 		// Unlock
 		controller.on('start:press', function(data) {
 			if (psx) {
@@ -347,8 +363,11 @@ module.exports = function(options, callback) {
 			}
 		});
 
-		// ------------------------------------------
-		// Default
+		// Define the following commands without any button modifiers:
+		// TRIANGLE: start
+		// SQUARE: stop
+		// CIRCLE: pause
+		// X: resume
 
 		// Start
 		controller.on('triangle:press', function(data) {
@@ -387,8 +406,11 @@ module.exports = function(options, callback) {
 			}
 		});
 
-		// ------------------------------------------
-		// R1
+		// Define the following commands with R1 being pressed:
+		// TRIANGLE: move Z up fast (0.25) while being held
+		// SQUARE: probe
+		// CIRCLE: move Z down slow (0.05) while being held
+		// X: move Z down fast (0.25) while being held
 
 		// Raise Z
 		controller.on('triangle:press', function(data) {
@@ -452,8 +474,11 @@ module.exports = function(options, callback) {
 		});
 
 
-		// ------------------------------------------
-		// PSX
+		// Define the following commands with PSX being pressed:
+		// TRIANGLE: Coolant mist on
+		// SQUARE: Coolant off
+		// CIRCLE: Coolant flood on
+		// X: Home
 
 		// M7 - mist on
 		controller.on('triangle:press', function(data) {
@@ -483,14 +508,8 @@ module.exports = function(options, callback) {
 			}
 		});
 
-		// ------------------------------------------
-		// ==[ D Pad ]==
-
-		var move_x_axis = 0;
-		var move_y_axis = 0;
-		var move_z_axis = 0;
-
-		// set movement of gantry based on dpad, and z-input from other buttons
+		// define support functions for gantry movement using the dpad controls.  Accepts axis ("X" or "Y"), direction
+		// (true up, false down) and the controller button name.  Set speeds to fast if l2, slow if l1 and normal if none.
 		function dpad(axis, direction, name) {
 			if (l2) {
 				// fast
@@ -504,10 +523,13 @@ module.exports = function(options, callback) {
 			}
 
 			if (options.verbose)
-				console.log(name + ': ' + direction + ' | ' + axis + ' | ' +  + l1 + r1);
+				console.log(name + ': ' + direction + ' | ' + axis + ' | '  + l1 + ' | ' + r1);
 		}
 
-		// set movement variables
+		// TODO: Consider bringing Z movement into this as well?
+
+		// based on the axis ("X" or "Y"), direction (true=up, false=down) and speed (1=slow, 2=normal, 3=fast), adjust
+		// the move_x_axis and move_y_axis variables accordingly
 		function dpadSetAxisMovment(axis, direction, speed) {
 			// set speed
 			switch(speed) {
@@ -521,27 +543,19 @@ module.exports = function(options, callback) {
 					speed = 0.5;
 			}
 
-			// Set movement variables
+			// set movement variables
 			if (axis == "X" && ( move_x_axis < 14 && move_x_axis > -14 )) {
-				// X Axis
-
-				// Set Direction
+				// adjust X axis
 				if (direction) {
-					// Positve Movment
 					move_x_axis += speed;
 				} else {
-					// Negitave Movment
 					move_x_axis += speed * -1;
 				}
 			} else if (axis == "Y" && ( move_y_axis < 14 && move_y_axis > -14 )) {
-				// Y Axis
-
-				// Set Direction
+				// adjust Y axis
 				if (direction) {
-					// Positve Movment
 					move_y_axis += speed;
 				} else {
-					// Negitave Movment
 					move_y_axis += speed * -1;
 				}
 			}
@@ -550,29 +564,28 @@ module.exports = function(options, callback) {
 				console.log("DPad Set Movemnet: " + move_x_axis + ': ' + move_y_axis + "   | " + speed)
 		}
 
-		// Move Gantry X | Y
+		// handle continuous movement of gantry by using a timer interval
 		setInterval(dpadMoveAxis, 100);
 		function dpadMoveAxis() {
-			// Check if Axis Needs Moving
+			// do we need to move the gantry?
 			if (move_x_axis != 0 || move_y_axis != 0 || move_z_axis != 0)
 			{
-				// Send gCode
-				sendMessage('command', options.port, 'gcode', 'G91 G0 X' + move_x_axis + " Y" + move_y_axis + " Z" + move_z_axis);
-				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
+				// TODO: Speed is being controlled by distance, not feedrate.  At least Marlin requires feedrate, so this needs to be adjusted
+				// send movement g-code
+				gcode.moveGantryRelative(move_x_axis, move_y_axis, move_z_axis);
 
-				// Debuging
 				if (options.verbose)
 					console.log("DPad MOVE: " + move_y_axis + ': ' + move_y_axis + ': ' + move_z_axis);
 
-				// Reset Axis Varables
-				move_x_axis -= move_x_axis;
-				move_y_axis -= move_y_axis;
-				move_z_axis -= move_z_axis;
+				// reset movement
+				move_x_axis = 0;
+				move_y_axis = 0;
+				move_z_axis = 0;
 			}
 		}
 
-		// - - - - - - - - - - - - - - - - - - - -
-
+		// handle dpad operations on Y up/down and X up/down
+		
 		// Y Up
 		controller.on('dpadUp:press', function(data) {
 			dpad('Y', true, data)
@@ -580,7 +593,7 @@ module.exports = function(options, callback) {
 		controller.on('dpadUp:hold', function(data) {
 			dpad('Y', true, data)
 		});
-    controller.on('dpadUp:release', function(data) {
+    	controller.on('dpadUp:release', function(data) {
 			move_y_axis = 0;
 		});
 
@@ -591,7 +604,7 @@ module.exports = function(options, callback) {
 		controller.on('dpadDown:hold', function(data) {
 			dpad('Y', false, data)
 		});
-    controller.on('dpadDown:release', function(data) {
+    	controller.on('dpadDown:release', function(data) {
 			move_y_axis = 0;
 		});
 
@@ -602,7 +615,7 @@ module.exports = function(options, callback) {
 		controller.on('dpadRight:hold', function(data) {
 			dpad('X', true, data)
 		});
-    controller.on('dpadRight:release', function(data) {
+    	controller.on('dpadRight:release', function(data) {
 			move_x_axis = 0;
 		});
 
@@ -613,38 +626,42 @@ module.exports = function(options, callback) {
 		controller.on('dpadLeft:hold', function(data) {
 			dpad('X', false, data)
 		});
-    controller.on('dpadLeft:release', function(data) {
-      move_x_axis = 0;
-    });
+    	controller.on('dpadLeft:release', function(data) {
+      		move_x_axis = 0;
+    	});
 
-		// ------------------------------------------
+		// handle commands r2
+		// r2 press + r1 + psx: spindle on
+		// r1 release w/o psx when spindle on: : spindle off
 
-		// Spendle ON State
+		// spindle on state
 		var spindle = false;
 
-		// Start Spindle
+		// start spindle
 		controller.on('r2:press', function(data) {
 			if (r1 && psx) {
-				sendMessage('command', options.port, 'gcode', 'M3 S1000');
+				gcode.spindleOn(1000);
 				spindle = true;
 				if (options.verbose)
 					console.log('Spindle: ' + spindle);
 			}
 		});
 
-		// Stop Spendle
+		// stop spindle
 		controller.on('r2:release', function(data) {
 			if (!psx && spindle) {
-				sendMessage('command', options.port, 'gcode', 'M5');
+				gcode.spindleOff();
 				spindle = false;
 				if (options.verbose)
 					console.log('Spindle: ' + spindle);
 			}
 		});
 
-		// ------------------------------------------
+		// analog sticks are used for continuous movement, speed based on amount moved.  Currently both
+		// sticks control the same movement (X/Y).  They must be enabled by using one of the stick buttons (press) to
+		// turn on (and off).
 
-		// Analog Sticks
+		// analog sticks
 		var stick_sensitivity = 1; // Do not set below 1
 
 		var left_x = 0;
@@ -652,13 +669,13 @@ module.exports = function(options, callback) {
 		var right_x = 0;
 			right_y = 0;
 
-		// Safty
+		// safety
 		var stick_left = false;
 			stick_right = false;
 
-		// Safty = Stick Button
+		// safety button check
 		controller.on('leftAnalogBump:press', function(data) {
-			// Toggle Enable
+			// toggle enable (currently both are locked together, change either it affects both)
 			if (stick_left  || stick_right) {
 				stick_left = false;
 				stick_right = false;
@@ -672,16 +689,16 @@ module.exports = function(options, callback) {
 			if (options.verbose)
 				console.log('L] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
-			/*
 			// Rumble Controller Briefly
 			ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			setTimeout(function () {
-			    ps3_rumble_left = 0; // 0-1 (Rumble left on/off)
+				ps3_rumble_left = 0; // 0-1 (Rumble left on/off)
 			}, 510);
-			*/
 		});
+
+		// TODO: This is mostly redundant with above - merge these
 		controller.on('rightAnalogBump:press', function(data) {
-			// Toggle Enable
+			// toggle enable (currently both are locked together, change either it affects both)
 			if (stick_right || stick_left) {
 				stick_right = false;
 				stick_left = false;
@@ -695,18 +712,15 @@ module.exports = function(options, callback) {
 			if (options.verbose)
 				console.log('R] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
-			/*
 			// Rumble Controller Briefly
 			ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			setTimeout(function () {
-			    ps3_rumble_left = 0; // 0-1 (Rumble left on/off)
+				ps3_rumble_left = 0; // 0-1 (Rumble left on/off)
 			}, 510);
-			*/
 		});
 
-		// - - - - - - - - - - - - - - - - - - - -
-
-		// Analog Sticks
+		// Handle the analog sticks moving left/right/up/down
+		// TODO: currently sticks are tracked separately yet do same thing - should either eliminate this or provide value from it
 		controller.on('left:move', function(data) {
 			if (options.verbose)
 				console.log('left Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
@@ -737,22 +751,23 @@ module.exports = function(options, callback) {
 				console.log('stick-right: ' + Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_right)
 		});
 
-		// map(value, fromLow, fromHigh, toLow, toHigh)   https://www.arduino.cc/en/Reference/Map
+		// simple map function to scale a number between a known set of ranges
 		function map(x, in_min, in_max, out_min, out_max)
 		{
 		  return Number((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
 		}
 
-		// Move Gantry bassed on Sticks at a regualr interval
-		setInterval(stickMovment, 50);
+		// move gantry based on sticks at a regular interval
+		setInterval(stickMovement, 50);
 
-		// Move X & Y base on X & Y Stick Movments
-		function stickMovment() {
+		// move X & Y based on stick movements
+		function stickMovement() {
 			var sum_x = Number(left_x + right_x);
 			var sum_y = Number(left_y + right_y);
 
 			if (left_x >= stick_sensitivity | left_x <= -stick_sensitivity || left_y >= stick_sensitivity || left_y <= -stick_sensitivity || right_x >= stick_sensitivity || right_x <= -stick_sensitivity || right_y >= stick_sensitivity || right_y <= -stick_sensitivity) {
-				// Additional Safty Catch
+				// additional safety check
+				// TODO: Research why this is here
 				if (!stick_left) {
 					left_x = 0; left_y = 0;
 				}
@@ -760,101 +775,59 @@ module.exports = function(options, callback) {
 					right_x = 0; right_y = 0;
 				}
 
-				//!!!!!!!!!!!!!!!!! need to detect if it's in inches or millimetersmm to avoid and overrun in the multiplier this can be done with agreeable status I believe.
-				sendMessage('command', options.port, 'gcode', 'G21');  // set to millimeters
+				gcode.moveGantryRelative(map(sum_x, 0, 128, 0.0001, 2), map(sum_y, 0, 128, 0.0001, 2), 0);
 
-				// Move based on stick imput and mapping, need to add exponital curve.
-				sendMessage('command', options.port, 'gcode', 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4)); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
-				sendMessage('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
 				if (options.verbose)
-					console.log('setInterval: x' + sum_x + ' y' + sum_y + ' | ' + 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4));
+					console.log('setInterval: x' + sum_x + ' y' + sum_y);
 			}
 		}
 
-		// ------------------------------------------
-
-		//sixasis motion events:
-		//the object returned from each of the movement events is as follows:
-		//{
-		//	 direction : values can be: 1 for right, forward and up. 2 for left, backwards and down.
-		//	 value : values will be from 0 to 120 for directions right, forward and up and from 0 to -120 for left, backwards and down.
-		//}
-
-/*
-		//right-left movement
-		controller.on('rightLeft:motion', function (data) {
-			 //...doStuff();
-		});
-
-		//forward-back movement
-		controller.on('forwardBackward:motion', function (data) {
-			 //...doStuff();
-		});
-		//up-down movement
-		controller.on('upDown:motion', function (data) {
-			 //...doStuff();
-		});
-*/
-		// ------------------------------------------
-
-		// Send Extras Updates
-		setInterval(updateControllerExtras, 500);
+		// send controller extras (rumble, battery) but only if not a clone controller
+		if (!options.clone)
+			setInterval(updateControllerExtras, 500);
 		function updateControllerExtras() {
-			if (!options.clone) {
-				controller.setExtras({
+			controller.setExtras({
 				rumbleLeft:  ps3_rumble_left,   // 0-1 (Rumble left on/off)
 				rumbleRight: ps3_rumble_right,   // 0-255 (Rumble right intensity)
 				led: ps3_led // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
-				});
-			}
-
-			//console.log("ps3_rumble_left: " + ps3_rumble_left);
-			//console.log("ps3_rumble_right: " + ps3_rumble_right);
+			});
 		}
 
-		//controller status
-		//as of version 0.6.2 you can get the battery %, if the controller is connected and if the controller is charging
+		// controller status
+		// as of version 0.6.2 you can get the battery %, if the controller is connected and if the controller is charging
 		var battery_level = 0;
 		controller.on('battery:change', function (value) {
-			//console.log('battery:change:' + value);
-
 			// Set LEDs
 			switch(value) {
-			case '100%':
-			case "90%":
-				ps3_led = 30;  // 0b11110 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
-		        break;
-			case "80%":
-			case "70%":
-				ps3_led = 28;  // 0b11100 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
-		        break;
-			case "50%":
-			case "40%":
-			case "30%":
-				ps3_led = 24;  // 0b11000 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
-		        break;
-		    default:
-		        ps3_led = 16;  // 0b10000 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
-		        break;
-		}
-
+				case '100%':
+				case "90%":
+					ps3_led = 30;  // 0b11110 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
+					break;
+				case "80%":
+				case "70%":
+					ps3_led = 28;  // 0b11100 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
+					break;
+				case "50%":
+				case "40%":
+				case "30%":
+					ps3_led = 24;  // 0b11000 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
+					break;
+				default:
+					ps3_led = 16;  // 0b10000 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
+					break;
+			}
 		});
+
+		/*
 		controller.on('connection:change', function (value) {
 			if (options.verbose)
 				console.log('connection:change:' + value);
 		});
+
 		controller.on('charging:change', function (value) {
 			if (options.verbose)
 				console.log('connection:change:' + value);
 		});
-
-/*
-		//DualShock 3 control rumble and light settings for the controller
-		controller.setExtras({
-			rumbleLeft:  0,   // 0-1 (Rumble left on/off)
-			rumbleRight: 0,   // 0-255 (Rumble right intensity)
-			led: 2 // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
-		});
-*/
+		*/
 	}
 };

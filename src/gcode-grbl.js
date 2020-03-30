@@ -57,4 +57,21 @@ module.exports = class {
     coolantOff() {
         this.sendMessage('command', this.options.port, 'gcode', 'M9');
     }
+
+    // move gantry: relative movement
+    moveGantryRelative(x, y, z) {
+        this.sendMessage('command', this.options.port, 'gcode', 'G21');  // set to millimeters
+        this.sendMessage('command', this.options.port, 'gcode', 'G91 G0 X' + x.toFixed(4) + " Y" + y.toFixed(4) + " Z" + z.toFixed(4));
+        this.sendMessage('command', this.options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
+    }
+
+    // turn spindle on to the specified speed
+    spindleOn(speed) {
+        sendMessage('command', options.port, 'gcode', 'M3 S' + speed);
+    }
+
+    // turn spindle off
+    spindleOff() {
+        sendMessage('command', options.port, 'gcode', 'M5');
+    }
 };

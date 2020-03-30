@@ -47,9 +47,9 @@ gcc -o sixpair sixpair.c -lusb
 sudo ./sixpair
 ```
 
-### [Parting DualShock 3 Controller](https://wiki.gentoo.org/wiki/Sony_DualShock)
+### [Pairing DualShock 3 Controller](https://wiki.gentoo.org/wiki/Sony_DualShock)
 ```
-### Disonnect DualShock 3 over USB
+### Disconnect DualShock 3 over USB
 
 # Start bluetoothctl:
 bluetoothctl
@@ -116,8 +116,7 @@ sudo apt-get install -y gcc-4.8 g++-4.8 && export CXX=g++-4.8
 sudo npm install -g cncjs-pendant-ps3 --unsafe-perm  # Install Globally
 _cmidgley note_: The above installs the NPM package, but to use this fork you must install this fork directly.  
 
-## If NOT installed globally, Install node-hid with hidraw support (https://github.com/rdepena/node-dualshock-controller)
-```
+### If NOT installed globally, Install node-hid with hidraw support (https://github.com/rdepena/node-dualshock-controller)
 
 ### [Create udev Rules](https://github.com/rdepena/node-dualshock-controller#-create-udev-rules)
 ```

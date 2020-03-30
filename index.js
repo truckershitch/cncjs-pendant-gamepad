@@ -19,7 +19,6 @@ const dualShock = require('dualshock-controller'); // https://www.npmjs.com/pack
 
 // [Varables]
 // =====================================================
-debug = false;		// if debug output should be shown, use option -verbose to enable
 
 // [Functions]
 // =====================================================
@@ -102,37 +101,43 @@ module.exports = function(options, callback) {
 	        'query': 'token=' + token
 	    });
 
+		// cncjs sent us a 'connect' message, saying that we successfully are communicating
 	    socket.on('connect', () => {
-	        console.log('Connected to ' + url);
+			if (options.verbose)
+		        console.log('Connected to ' + url);
 
-	        // Open port:
-		console.log('Sending open request for ' + options.port + ' at baud rate ' + options.baudrate);
-	        socket.emit('open', options.port, {
-	            baudrate: Number(options.baudrate),
-	            controllerType: options.controllerType
-	        });
+			// Open port to the CNC controller (command 'open')
+			if (options.verbose)
+				console.log('Sending open request for ' + options.port + ' at baud rate ' + options.baudrate);
+
+			socket.emit('open', options.port, {
+				baudrate: Number(options.baudrate),
+				controllerType: options.controllerType
+			});
 	    });
 
+		// cncjs sent us an 'error' message.  Not much we can do but report it and kill our connection.
 	    socket.on('error', (err) => {
-	        console.error('Connection error.');
+	        console.error('Error message received from cncjs - killing connection');
 	        if (socket) {
 	            socket.destroy();
 	            socket = null;
 	        }
 	    });
 
+		// connection closed message received
 	    socket.on('close', () => {
-	        console.log('Connection closed.');
+			if (options.verbose)
+		        console.log('Connection closed.');
 	    });
 
+		// our serial port open request has completed
 	    socket.on('serialport:open', function(options) {
-	        options = options || {};
-
 	        console.log('Connected to port "' + options.port + '" (Baud rate: ' + options.baudrate + ')');
-
 	        callback(null, socket);
 	    });
 
+		// we got an error attempting to open the serial port
 	    socket.on('serialport:error', function(options) {
 	        callback(new Error('Error opening serial port "' + options.port + '"'));
 	    });
@@ -152,31 +157,32 @@ module.exports = function(options, callback) {
 		// =====================================================
 		// Play Station 3 Controller / Game Pad
 		// https://www.npmjs.com/package/dualshock-controller
-		//var dualShock = require('dualshock-controller');
+		// var dualShock = require('dualshock-controller');
 
-		//pass options to init the controller.
-		//var controller = dualShock(
+		// pass options to init the controller.
+		// var controller = dualShock(
 		controller = dualShock(
 			 {
-				  //you can use a ds4 by uncommenting this line.
-				  //config: "dualshock4-generic-driver",
-				  //if using ds4 comment this line.
+				  // you can use a ds4 by uncommenting this line.
+				  // config: "dualshock4-generic-driver",
+				  // if using ds4 comment this line.
 				  config : "dualShock3",
-				  //smooths the output from the acelerometers (moving averages) defaults to true
+				  // smooths the output from the acelerometers (moving averages) defaults to true
 				  accelerometerSmoothing : true,
-				  //smooths the output from the analog sticks (moving averages) defaults to false
-				  analogStickSmoothing : false // DO NOT ENABLE, does not retun sticks to center when enabled. 128 x 128
+				  // smooths the output from the analog sticks (moving averages) defaults to false
+				  analogStickSmoothing : false // DO NOT ENABLE, does not return sticks to center when enabled. 128 x 128
 			 });
 
-		//make sure you add an error event handler
-		//controller.on('connection:change', data => console.log("conection" + data));
+		// make sure you add an error event handler
+		// controller.on('connection:change', data => console.log("conection" + data));
 
 		controller.on('connected', function(state) {
-			console.log('connected: ' + state);
+			if (options.verbose)
+				console.log('Controller connected: ' + state);
 		});
 
 		controller.on('error', function(err) {
-			console.log("Error Message: " + err);
+			console.log("Controller error: " + err);
 			//controller.close();  // Not a function currently, have to kill program.
 			//controller.destroy();
 			process.exit();  // Kill Program
@@ -243,9 +249,6 @@ module.exports = function(options, callback) {
 			r2 = false;
 			console.log(data + '|' + r2);
 		});
-
-		// ------------------------------------------
-		// https://github.com/cncjs/cncjs/blob/master/src/web/lib/controller.js
 
 		// Unlock
 		controller.on('start:press', function(data) {

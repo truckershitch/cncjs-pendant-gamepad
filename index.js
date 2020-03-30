@@ -19,7 +19,7 @@ const dualShock = require('dualshock-controller'); // https://www.npmjs.com/pack
 
 // View HID Devices
 //var HID = require('node-hid');
-console.log(HID.devices());
+//console.log(HID.devices());
 
 
 // [Varables]

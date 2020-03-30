@@ -2,7 +2,7 @@
 
 // MIT License
 //
-// Copyright (c) 2017 Austin St. Aubin
+// Copyright (c) 2017 Austin St. Aubin for cncjs
 // Copyright (c) 2020 Chris Midgley
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy

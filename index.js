@@ -41,9 +41,19 @@ const getUserHome = function() {
 module.exports = function(options, callback) {
 	
 	// handles sending messages to the cncjs socket server, or displaying on screen when using --fakeSocket option
-	const sendMessage = function(eventName, a1, a2, a3, a4, a5) {
-		if (options.fakeSocket)
-			console.log("Message " + command + ": " + a2 + ", " + a3 + ", " + a4 + ", " + a5);
+	const sendMessage = function(eventName, a1, a2, a3) {
+		if (options.fakeSocket) {
+			if (eventName == 'open')
+				console.log('Socket: Open port ' + a1 + ' at ' + a2.baudrate + 'bps for controller ' + a2.controllerType);
+			else if (eventName == 'command') {
+				if (a2 == 'gcode')
+					console.log("Socket: Gcode " + a3);
+				else
+					console.log("Socket: Command " + a2);
+			}
+			else 
+				console.log('Socket: Unknown command ' + eventName + ": " + a2 + ", " + a3);
+		}
 		else
 			socket.emit(eventName, a1, a2, a3, a4, a5);
 	}
@@ -106,12 +116,18 @@ module.exports = function(options, callback) {
 	    const token = generateAccessToken({ id: '', name: 'cncjs-pendant' }, options.secret, options.accessTokenLifetime);
 	    const url = 'ws://' + options.socketAddress + ':' + options.socketPort + '?token=' + token;
 
-	    socket = io.connect('ws://' + options.socketAddress + ':' + options.socketPort, {
-	        'query': 'token=' + token
-	    });
+		if (options.fakeSocket)
+			console.log('Socket connect to ws://' + options.socketAddress + ':' + options.socketPort + ' ignored; --fakeSocket option used');
+		else {
+			if (options.verbose)
+				console.log('Attempting connect to ws://' + options.socketAddress + ':' + options.socketPort);
+		    socket = io.connect('ws://' + options.socketAddress + ':' + options.socketPort, {
+				'query': 'token=' + token
+			});
+		}
 
 		// cncjs sent us a 'connect' message, saying that we successfully are communicating
-	    socket.on('connect', () => {
+	    receiveMessage('connect', () => {
 			if (options.verbose)
 		        console.log('Connected to ' + url);
 
@@ -126,39 +142,40 @@ module.exports = function(options, callback) {
 	    });
 
 		// cncjs sent us an 'error' message.  Not much we can do but report it and kill our connection.
-	    socket.on('error', (err) => {
+	    receiveMessage('error', (err) => {
 	        console.error('Error message received from cncjs - killing connection');
 	        if (socket) {
-	            socket.destroy();
+				if (!options.fakeSocket)
+	            	socket.destroy();
 	            socket = null;
 	        }
 	    });
 
 		// connection closed message received
-	    socket.on('close', () => {
+	    receiveMessage('close', () => {
 			if (options.verbose)
 		        console.log('Connection closed.');
 	    });
 
 		// our serial port open request has completed
-	    socket.on('serialport:open', function(options) {
+	    receiveMessage('serialport:open', function(options) {
 	        console.log('Connected to port "' + options.port + '" (Baud rate: ' + options.baudrate + ')');
 	        callback(null, socket);
 	    });
 
 		// we got an error attempting to open the serial port
-	    socket.on('serialport:error', function(options) {
+	    receiveMessage('serialport:error', function(options) {
 	        callback(new Error('Error opening serial port "' + options.port + '"'));
 	    });
 
 		/*
-	    socket.on('serialport:read', function(data) {
+	    receiveMessage('serialport:read', function(data) {
 	        console.log((data || '').trim());
 	    });
 		*/
 
 	    /*
-	    socket.on('serialport:write', function(data) {
+	    receiveMessage('serialport:write', function(data) {
 	        console.log((data || '').trim());
 	    });
 	    */

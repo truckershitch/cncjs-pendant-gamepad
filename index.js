@@ -63,7 +63,7 @@ module.exports = function(options, callback) {
 		if (!options.fakeSocket)
 			socket.on(msg, callback);
 		else
-			console.log('Listener set up for ' + msg + ': ignoring for fake socket');
+			console.log('Listener set up for ' + msg + ': ignored; --fakeSocket option used');
 	}
 
     var pendant_started = false;
@@ -72,9 +72,13 @@ module.exports = function(options, callback) {
 	setInterval(checkController, 1000);
 	firstCheck = true;
 	function checkController(socket, controller) {
+		// if we already have a pendant, ignore this as we don't need to try to (re)connect
+		if (pendant_started)
+			return;
+
 		// Get HID Devices
 		var devices = HID.devices();
-		if (options.verbose && !pendant_started) {
+		if (options.verbose) {
 			console.log("Devices discovered:");
 			console.log(devices);
 		}
@@ -209,9 +213,14 @@ module.exports = function(options, callback) {
 
 		controller.on('error', function(err) {
 			console.log("Controller error: " + err);
+			// indicate that we have lost the pendant
+			pendant_started = false;
+			firstCheck = true;
 			//controller.close();  // Not a function currently, have to kill program.
 			//controller.destroy();
-			process.exit();  // Kill Program
+
+			// used to kill the process, now we attempt to reconnect to the pendant
+			//process.exit();  // Kill Program
 		});
 
 		// ------------------------------------------

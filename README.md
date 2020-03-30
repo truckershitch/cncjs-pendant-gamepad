@@ -4,6 +4,8 @@ Pendant controller for [Dualshock 3 joystick](https://www.playstation.com/en-us/
 
 ## Fork information
 
+### This is a work-in-progress, is untested, and is constantly changing!
+
 This is a fork of the original [cncjs-pendant-ps3 driver](https://github.com/cncjs/cncjs-pendant-ps3), which adds the following features:
 
 * Abstracted gcode to allow for support of all controllers (not just Grbl).  Currently support has been added for Grbl and Marlin.  If you can, please consider adding support for Smoothie and/or TinyG and do a pull request.

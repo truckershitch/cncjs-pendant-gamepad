@@ -226,14 +226,14 @@ You directly run cncjs-pendant-ps3 from the command line using
 Or, if using a local copy, you can run it from the project directory using 
 
 ```
-node bin/cncjs-pendant-ps3 -p /dev/xxx
+node cncjs-pendant-ps3 -p /dev/xxx
 ```
 
  where xxx is the device on the server that connects to your CNC controller (Grbl, Marlin, etc), such as /dev/ttyUSB0 or /dev/ACM0, yyy. You may need other options, such as -b (baud rate) or -t (controller type) - see above.  Note that the pendent device will be automatically detected and is not provided as an option to cnc-pendant-ps3.  For example:
 
 ```
 cd ~/cncjs-pendant-ps3
-node bin/cncjs-pendant-ps3 -p /dev/ACM0 -b 250000 -clone
+node cncjs-pendant-ps3 -p /dev/ACM0 -b 250000 -clone
 ```
 
 ## First use recommendation

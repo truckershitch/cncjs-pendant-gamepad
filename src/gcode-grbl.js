@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-// G-code handler for cncjs-pendant-ps3 to abstract the code across different controller types
+// G-code handler for cncjs-pendant-ps3 for Grbl controllers
+
 // by Chris Midgley <chris@koose.com>
 
 // MIT License
@@ -27,13 +28,12 @@
 
 module.exports = class {
     constructor(options, sendMessage) {
-        this.sendMessage = messageHandler;
+        this.sendMessage = sendMessage;
         this.options = options;
     }
 
+    // execute a probe operation
     probe() {
-        console.log('Options are:');
-        console.log(this.options);
         this.sendMessage('command', this.options.port, 'gcode', 'G91');
         this.sendMessage('command', this.options.port, 'gcode', 'G38.2 Z-15.001 F120');
         this.sendMessage('command', this.options.port, 'gcode', 'G90');
@@ -41,12 +41,5 @@ module.exports = class {
         this.sendMessage('command', this.options.port, 'gcode', 'G91');
         this.sendMessage('command', this.options.port, 'gcode', 'G0 Z3');
         this.sendMessage('command', this.options.port, 'gcode', 'G90');
-    }
-
-    moveRelative(x=0, y=0, z=0) {
-        if (this.options.verbose)
-            console.log('moveRelative verbose');
-        else
-            console.log('moveRelative without verbose');
     }
 };

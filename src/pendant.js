@@ -13,7 +13,6 @@ const path = require('path');
 const io = require('socket.io-client');  	// Socket.io connection to CNC
 const jwt = require('jsonwebtoken');
 const HID = require('node-hid');
-const Gcode = require('./gcode');
 const dualShock = require('dualshock-controller'); // https://www.npmjs.com/package/dualshock-controller
 
 // Generate Token
@@ -60,8 +59,21 @@ module.exports = function(options, callback) {
 	}
 
 	// set up our abstract gcode emitter
-	var gcode = new Gcode(options, sendMessage);
-
+	var gcode = null;
+	switch (options.controllerType.toLowerCase()) {
+		case 'grbl':
+			const Gcode = require('./gcode-grbl');
+			gcode = new Gcode(options, sendMessage);
+			break;
+		case 'marlin':
+			const Gcode = require('./gcode-marlin');
+			gcode = new Gcode(options, sendMessage);
+			break;
+		default:
+			console.error('Controller type ' + options.controllerType + ' unknown; unable to continue');
+			process.exit();
+	}
+			
 	// track that we do not yet have a pendant attached
     var pendant_started = false;
 

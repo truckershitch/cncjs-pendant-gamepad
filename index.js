@@ -3,6 +3,7 @@
 // Node.js Playstation 3 / DS3 Controller for CNC.js
 // by Austin St. Aubin <austinsaintaubin@gmail.com>
 // v1.0.9 BETA [2017/03/27]
+// modified by Chris Midgley <chris@koose.com> for Marlin, and overall improvements/bug fixes
 // https://github.com/cheton/cnc/issues/103
 // [PS3 CNC Control Button Map](https://docs.google.com/drawings/d/1DMzfBk5DSvjJ082FrerrfmpL19-pYAOcvcmTbZJJsvs/edit?usp=sharing)
 // USAGE: ./cncjs-pendant-ps3 -p "/dev/ttyUSB0"
@@ -18,7 +19,7 @@ const dualShock = require('dualshock-controller'); // https://www.npmjs.com/pack
 
 // View HID Devices
 //var HID = require('node-hid');
-//console.log(HID.devices());
+console.log(HID.devices());
 
 
 // [Varables]
@@ -46,10 +47,11 @@ const getUserHome = function() {
 module.exports = function(options, callback) {
     options = options || {};
     options.secret = get(options, 'secret', process.env['CNCJS_SECRET']);
-    options.baudrate = get(options, 'baudrate', 115200);
-    options.socketAddress = get(options, 'socketAddress', 'localhost');
-    options.socketPort = get(options, 'socketPort', 8000);
-    options.controllerType = get(options, 'controllerType', 'Grbl');
+	options.baudrate = get(options, 'baudrate', 115200);
+	options.socketAddress = get(options, 'socketAddress', 'localhost');
+	options.socketPort = get(options, 'socketPort', 8000);
+	options.controllerType = get(options, 'controllerType', 'Grbl');
+	options.cloneController = get(options, 'clone', 'no');
     options.accessTokenLifetime = get(options, 'accessTokenLifetime', '30d');
 
     var pendant_started = false;
@@ -105,7 +107,8 @@ module.exports = function(options, callback) {
 	    socket.on('connect', () => {
 	        console.log('Connected to ' + url);
 
-	        // Open port
+	        // Open port:
+		console.log('Sending open request for ' + options.port + ' at baud rate ' + options.baudrate);
 	        socket.emit('open', options.port, {
 	            baudrate: Number(options.baudrate),
 	            controllerType: options.controllerType
@@ -192,55 +195,55 @@ module.exports = function(options, callback) {
 		var psx = false;
 		controller.on('psxButton:press', function(data) {
 			psx = true;
-			//console.log(data + '|' + psx);
+			console.log(data + '|' + psx);
 		});
 		controller.on('psxButton:release', function(data) {
 			psx = false;
-			//console.log(data + '|' + psx);
+			console.log(data + '|' + psx);
 		});
 
 		// L1
 		var l1 = false;
 		controller.on('l1:press', function(data) {
 			l1 = true;
-			//console.log(data + '|' + l1);
+			console.log(data + '|' + l1);
 		});
 		controller.on('l1:release', function(data) {
 			l1 = false;
-			//console.log(data + '|' + l1);
+			console.log(data + '|' + l1);
 		});
 
 		// R1
 		var r1 = false;
 		controller.on('r1:press', function(data) {
 			r1 = true;
-			//console.log(data + '|' + r1);
+			console.log(data + '|' + r1);
 		});
 		controller.on('r1:release', function(data) {
 			r1 = false;
-			//console.log(data + '|' + r1);
+			console.log(data + '|' + r1);
 		});
 
 		// L2
 		var l2 = false;
 		controller.on('l2:press', function(data) {
 			l2 = true;
-			//console.log(data + '|' + l2);
+			console.log(data + '|' + l2);
 		});
 		controller.on('l2:release', function(data) {
 			l2 = false;
-			//console.log(data + '|' + l2);
+			console.log(data + '|' + l2);
 		});
 
 		// R2
 		var r2 = false;
 		controller.on('r2:press', function(data) {
 			r2 = true;
-			//console.log(data + '|' + r2);
+			console.log(data + '|' + r2);
 		});
 		controller.on('r2:release', function(data) {
 			r2 = false;
-			//console.log(data + '|' + r2);
+			console.log(data + '|' + r2);
 		});
 
 		// ------------------------------------------
@@ -282,7 +285,7 @@ module.exports = function(options, callback) {
 		controller.on('triangle:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'start');
-				//console.log('cyclestart:' + data);
+				console.log('cyclestart:' + data);
 			}
 		});
 
@@ -290,7 +293,7 @@ module.exports = function(options, callback) {
 		controller.on('square:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'stop');
-				//console.log('feedhold:' + data);
+				console.log('feedhold:' + data);
 			}
 		});
 
@@ -299,7 +302,7 @@ module.exports = function(options, callback) {
 		controller.on('circle:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'pause');
-				//console.log('pause:' + data);
+				console.log('pause:' + data);
 			}
 		});
 
@@ -307,7 +310,7 @@ module.exports = function(options, callback) {
 		controller.on('x:press', function(data) {
 			if (!r1 && !l1 && !psx) {
 				socket.emit('command', options.port, 'resume');
-				//console.log('unlock:' + data);
+				console.log('unlock:' + data);
 			}
 		});
 
@@ -342,7 +345,7 @@ module.exports = function(options, callback) {
 				socket.emit('command', options.port, 'gcode', 'G0 Z3');
 				socket.emit('command', options.port, 'gcode', 'G90');
 
-				//console.log('probe:' + data);
+				console.log('probe:' + data);
 			}
 		});
 
@@ -514,7 +517,7 @@ module.exports = function(options, callback) {
 			}
 
 			// Debugging
-			//console.log(name + ': ' + direction + ' | ' + axis + ' | ' +  + l1 + r1);
+			console.log(name + ': ' + direction + ' | ' + axis + ' | ' +  + l1 + r1);
 		}
 
 		// Set Movemtn Varables
@@ -556,7 +559,7 @@ module.exports = function(options, callback) {
 				}
 			}
 
-			//console.log("DPad Set Movemnet: " + move_x_axis + ': ' + move_y_axis + "   | " + speed)
+			console.log("DPad Set Movemnet: " + move_x_axis + ': ' + move_y_axis + "   | " + speed)
 		}
 
 		// Move Gantry X | Y
@@ -570,7 +573,7 @@ module.exports = function(options, callback) {
 				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
 
 				// Debuging
-				//console.log("DPad MOVE: " + move_y_axis + ': ' + move_y_axis + ': ' + move_z_axis);
+				console.log("DPad MOVE: " + move_y_axis + ': ' + move_y_axis + ': ' + move_z_axis);
 
 				// Reset Axis Varables
 				move_x_axis -= move_x_axis;
@@ -635,7 +638,7 @@ module.exports = function(options, callback) {
 			if (r1 && psx) {
 				socket.emit('command', options.port, 'gcode', 'M3 S1000');
 				spindle = true;
-				//console.log('Spindle: ' + spindle);
+				console.log('Spindle: ' + spindle);
 			}
 		});
 
@@ -644,14 +647,14 @@ module.exports = function(options, callback) {
 			if (!psx && spindle) {
 				socket.emit('command', options.port, 'gcode', 'M5');
 				spindle = false;
-				//console.log('Spindle: ' + spindle);
+				console.log('Spindle: ' + spindle);
 			}
 		});
 
 		// ------------------------------------------
 
 		// Analog Sticks
-		var stick_sensitivity = 1; // Do not set bellow 1
+		var stick_sensitivity = 1; // Do not set below 1
 
 		var left_x = 0;
 			left_y = 0;
@@ -675,7 +678,7 @@ module.exports = function(options, callback) {
 				ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			}
 
-			//console.log('L] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
+			console.log('L] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
 			/*
 			// Runble Controler Beefly
@@ -697,7 +700,7 @@ module.exports = function(options, callback) {
 				ps3_rumble_left = 1; // 0-1 (Rumble left on/off)
 			}
 
-			//console.log('R] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
+			console.log('R] rightAnalogBump: ' + stick_right + " leftAnalogBump: "+ stick_left);
 
 			/*
 			// Runble Controler Beefly
@@ -712,7 +715,7 @@ module.exports = function(options, callback) {
 
 		// Analog Sticks
 		controller.on('left:move', function(data) {
-			//console.log('left Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
+			console.log('left Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
 			if (stick_left) {
 				left_x = data.x - 128
 				left_y = (data.y * -1) +128
@@ -721,10 +724,10 @@ module.exports = function(options, callback) {
 				left_y = 0;
 			}
 
-			//console.log('stick-left: ' +  Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_left)
+			console.log('stick-left: ' +  Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_left)
 		});
 		controller.on('right:move', function(data) {
-			//console.log('right Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
+			console.log('right Moved: ' + data.x + ' | ' + Number((data.y * -1) +255));
 			if (stick_right) {
 
 				right_x = data.x - 128
@@ -734,7 +737,7 @@ module.exports = function(options, callback) {
 				right_y = 0;
 			}
 
-			//console.log('stick-right: ' + Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_right)
+			console.log('stick-right: ' + Number(data.x - 128) + ' [' + right_x + '] | ' +  Number(data.y - 128) + ' [' + right_y + '] | ' + stick_right)
 		});
 
 		// [Function] map(value, fromLow, fromHigh, toLow, toHigh)   https://www.arduino.cc/en/Reference/Map
@@ -766,7 +769,7 @@ module.exports = function(options, callback) {
 				// Move based on stick imput and mapping, need to add exponital curve.
 				socket.emit('command', options.port, 'gcode', 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4)); // Switch to relative coordinates, Move one unit right in X and one unit right in Y
 				socket.emit('command', options.port, 'gcode', 'G90');  // Switch back to absolute coordinates
-				//console.log('setInterval: x' + sum_x + ' y' + sum_y + ' | ' + 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4));
+				console.log('setInterval: x' + sum_x + ' y' + sum_y + ' | ' + 'G91 G0 X' + map(sum_x, 0, 128, 0.0001, 2).toFixed(4) + ' Y' + map(sum_y, 0, 128, 0.0001, 2).toFixed(4));
 			}
 		}
 
@@ -799,7 +802,8 @@ module.exports = function(options, callback) {
 		// Send Extras Updates
 		setInterval(updateControllerExtras, 500);
 		function updateControllerExtras() {
-			controller.setExtras({
+			if (options.cloneController == 'no') {
+				controller.setExtras({
 				rumbleLeft:  ps3_rumble_left,   // 0-1 (Rumble left on/off)
 				rumbleRight: ps3_rumble_right,   // 0-255 (Rumble right intensity)
 				led: ps3_led // 2 | 4 | 8 | 16 (Leds 1-4 on/off, bitmasked)
@@ -813,7 +817,7 @@ module.exports = function(options, callback) {
 		//as of version 0.6.2 you can get the battery %, if the controller is connected and if the controller is charging
 		var battery_level = 0;
 		controller.on('battery:change', function (value) {
-			console.log('battery:change:' + value);
+			//console.log('battery:change:' + value);
 
 			// Set LEDs
 			switch(value) {

@@ -10,16 +10,16 @@ var options = {};
 
 program
 	.version(pkg.version)
-	.usage('-s <secret> -p <port> [options]')
+	.usage('-p <port> [options]')
 	.option('-l, --list', 'list available ports then exit')
-    .option('-s, --secret', 'the secret key stored in the ~/.cncrc file')
 	.option('-p, --port <port>', 'path or name of serial port')
 	.option('-b, --baudrate <baudrate>', 'baud rate (default: 115200)', 115200)
+	.option('-t, --controller-type <type>', 'controller type: Grbl|Smoothie|TinyG|Marlin (default: Grbl)', 'Grbl')
+    .option('-s, --secret <secret>', 'the secret key stored in the ~/.cncrc file')
 	.option('--socket-address <address>', 'socket address or hostname (default: localhost)', 'localhost')
 	.option('--socket-port <port>', 'socket port (default: 8000)', 8000)
-	.option('--controller-type <type>', 'controller type: Grbl|Smoothie|TinyG (default: Grbl)', 'Grbl')
     .option('--access-token-lifetime <lifetime>', 'access token lifetime in seconds or a time span string (default: 30d)', '30d')
-
+    .option('--clone <clone>', 'if using a clone ps3 controller and are getting write errors, set to yes (default: no)', 'no');
 program.parse(process.argv);
 
 var options = {

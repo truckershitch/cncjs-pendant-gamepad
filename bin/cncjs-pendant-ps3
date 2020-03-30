@@ -66,7 +66,7 @@ serialport.list(function(err, ports) {
         return port.comName;
     });
 
-    console.log('For options, use option --help\n');
+    console.log('For list of available options, use --help\n');
 
     inquirer.prompt([{
         type: 'list',

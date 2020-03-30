@@ -34,15 +34,7 @@ module.exports = class {
 
     // execute a probe operation
     probe() {
-        // this.sendMessage('command', this.options.port, 'gcode', 'G91');
-        // this.sendMessage('command', this.options.port, 'gcode', 'G38.2 Z-15.001 F120');
-        // this.sendMessage('command', this.options.port, 'gcode', 'G90');
-        // this.sendMessage('command', this.options.port, 'gcode', 'G10 L20 P1 Z15.001');
-        // this.sendMessage('command', this.options.port, 'gcode', 'G91');
-        // this.sendMessage('command', this.options.port, 'gcode', 'G0 Z3');
-        // this.sendMessage('command', this.options.port, 'gcode', 'G90');
-        if (this.options.verbose)
-            console.log('Probe ignored on Marlin');
+        this.sendMessage('command', this.options.port, 'gcode', 'M28 Z'); // use a simple touch plate
     }
 
     // coolant operations: mist on
@@ -58,6 +50,11 @@ module.exports = class {
     // coolant operations: all coolant off
     coolantOff() {
         this.sendMessage('command', this.options.port, 'gcode', 'M9');
+    }
+
+    // move gantry: home
+    moveGantryHome() {
+        this.sendMessage('command', this.options.port, 'gcode', 'G28 X Y');
     }
 
     // move gantry: relative movement

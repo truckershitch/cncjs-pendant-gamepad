@@ -58,6 +58,11 @@ module.exports = class {
         this.sendMessage('command', this.options.port, 'gcode', 'M9');
     }
 
+    // move gantry: home
+    moveGantryHome() {
+        this.sendMessage('command', this.options.port, 'homing');
+    }
+
     // move gantry: relative movement
     moveGantryRelative(x, y, z) {
         this.sendMessage('command', this.options.port, 'gcode', 'G21');  // set to millimeters

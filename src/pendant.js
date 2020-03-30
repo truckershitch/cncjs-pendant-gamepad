@@ -504,7 +504,7 @@ module.exports = function(options, callback) {
 		// Home
 		controller.on('x:press', function(data) {
 			if (psx) {
-				sendMessage('command', options.port, 'homing');
+				gcode.moveGantryHome();
 			}
 		});
 

@@ -23,7 +23,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
+// TODO: Remove these comments when done
+//
+// Class model for plug-in code generators
+// - Base semi-abstract class: Machine
+// - Controllers inherit: Marlin inherits Machine, Grbl inherits Machine, etc.
+// - Individual machines inherit controllers: MPCNC inherits Marlin
+//
+// - Need a way to define unique machine parameters as well, like Fan=>SuperPID?
+//
+// - CNC.js offers some knowledge of machine and port; we should understand that as it may
+//   provide a discovery method or even services for abstraction?
+//
+// END TODO: End of section
 
 const fs = require('fs');
 const path = require('path');
@@ -187,8 +199,6 @@ module.exports = function(options, callback) {
 	    receiveMessage('connect', () => {
 			if (options.verbose)
 		        console.log('Connected to ' + url);
-
-			// TODO: Verify that we really need this open feature - if not, we can ignore port and clean this up
 
 			// Open port to the CNC controller (command 'open')
 			if (options.verbose)

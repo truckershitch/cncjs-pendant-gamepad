@@ -4,15 +4,15 @@ Pendant controller for [Dualshock 3 joystick](https://www.playstation.com/en-us/
 
 ## Fork information
 
-### This is a work-in-progress, is untested, and is constantly changing!
-
 This is a fork of the original [cncjs-pendant-ps3 driver](https://github.com/cncjs/cncjs-pendant-ps3), which adds the following features:
 
-* Abstracted gcode to allow for support of all controllers (not just Grbl).  Currently support has been added for Grbl and Marlin.  If you can, please consider adding support for Smoothie and/or TinyG and do a pull request.
+* Abstracted gcode to allow for support of different controllers and machines
+    * Currently supports Grbl and Marlin
+    * Don't have the controller you need?  Consider adding one - it's easy!
 * Substantial improvements to README documentation
-* Handles clone PS3 controllers with the --clone option (disables rumble and battery LED status)
-* New debugging features, such as --fakeSocket and --verbose
-* Auto-reconnect to pendant if connection fails (instead of killing the program)
+* Handles clone PS3 controllers (see --clone)
+* New debugging features (see --fakeSocket and --verbose)
+* Auto-reconnect to pendant if connection fails
 * Added computed feed speed based on distance to travel to have gantry that quickly respond to changes (for Marlin)
 
 --------------------------------------
@@ -208,9 +208,9 @@ I recommend rebooting before continuing.
 
 The program accepts several optional arguments:
 * `-l, --list` List available ports and then exit
-* `-p, --port <port>` The port of the controller, such as /dev/ttyUSB0 or /dev/ACM0
-* `-b, --baudrate <baudrate>` The baudrate used when connecting to the controller (default: 115200)
-* `-t, --controllerType <type>` The type of controller (marlin, grbl, smoothie, tinyg), defaults to grbl
+* `-p, --port <port>` The port of the controller, such as /dev/ttyUSB0 or /dev/ACM0 (required)
+* `-b, --baudrate <baudrate>` The baudrate used when connecting to the controller (required)
+* `-t, --controllerType <type>` The type of controller (marlin, grbl, smoothie, tinyg) (required)
 * `-s, --secret <secret>` The secret API key for accessing the cncjs server.  If not specified, checks if environment variable CNCJS_SECRET is set, and if not, goes directly to the ~/.cncrc file to get the secret.  Generally can be ignored when cncjs and cncjs-pendant-ps3 are on the same server, but must be specified if they are operating on difference servers.
 * `--socketAddress <address>` The IP address / DNS name of the cncjs server (default: localhost) 
 * `--socketPort <port>` The port number of the cncjs server (default: 8000)
@@ -220,7 +220,9 @@ The program accepts several optional arguments:
 * `-f, --fake` Use a fake socket server and display cncjs messages to console instead
 * `--help` bring up a help listing of all options
 
-The most important options are --port (-p) to specify the communications port to the controller, and --controllerType (-t) to specify the type of controller you are running (Marlin, Grbl, etc).  If you don't know your port number, use the --list (-l) option to see a list of ports to try.
+The most important options are --port (-p) to specify the communications port to the controller, --baudrate (-b) to specify the connection speed, and --controllerType (-t) to specify the type of controller you are running (Marlin, Grbl, etc).  If you don't know your port number, use the --list (-l) option to see a list of ports to try.
+
+Here is how those options are used.  If CNC.js is already connected, the port is used to locate the existing connection and no reconnection or change is made to baudrate or controller.  However, if CNC.js is not connected, then these parameters are used to establish a connection to the controller.
 
 To start the pendant server, run a command similar to this:
 

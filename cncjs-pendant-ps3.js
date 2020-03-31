@@ -41,12 +41,12 @@ var serverMain = require('./src/pendant');
 var options = {};
 
 program
-	.version(pkg.version)
-	.usage('-p <port> [options]')
+    .version(pkg.version)
+    .usage('cncjs-pendant-ps3 -b <baud> -t <contoller> -p <port> [options]')
 	.option('-l, --list', 'list available ports then exit')
 	.option('-p, --port <port>', 'path or name of serial port')
-	.option('-b, --baudrate <baudrate>', 'baud rate', 115200)
-	.option('-t, --controller-type <type>', 'controller type: Grbl|Smoothie|TinyG|Marlin', 'Grbl')
+	.option('-b, --baudrate <baudrate>', 'baud rate')
+	.option('-t, --controller-type <type>', 'controller type: Grbl|Smoothie|TinyG|Marlin')
     .option('-s, --secret <secret>', 'the secret key stored in the ~/.cncrc file')
 	.option('--socket-address <address>', 'socket address or hostname', 'localhost')
 	.option('--socket-port <port>', 'socket port', 8000)
@@ -116,30 +116,10 @@ var createServer = function(options) {
     serverMain(options, function(err, socket) {});
 };
 
-if (options.port || options.fakeSocket) {
+if ((options.controllerType && options.baudrate && options.port) || options.fakeSocket) {
     createServer(options);
     return;
 }
 
-serialport.list(function(err, ports) {
-    if (err) {
-        console.error(err);
-        process.exit(1);
-    }
-    const choices = ports.map(function(port) {
-        return port.comName;
-    });
-
-    console.log('For list of available options, use --help\n');
-
-    inquirer.prompt([{
-        type: 'list',
-        name: 'port',
-        message: 'Specify which port you want to use?',
-        choices: choices
-    }]).then(function(answers) {
-        options.port = answers.port;
-
-        createServer(options);
-    });
-});
+console.log('Must include --port (-p), --baudrate (-b) and --controllerType (-c) to start a connection');
+console.log('For list of available options, use --help\n');

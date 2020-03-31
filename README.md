@@ -1,261 +1,180 @@
-# Dualshock 3 CNC pendant for CNC.js
+Generic Gamepad Support for CNC.js
+==================================
 
-Pendant controller for [Dualshock 3 joystick](https://www.playstation.com/en-us/explore/accessories/Dualshock-3-ps3/) for [CNC.js](cnc.js.org), allowing you to use a USB or wireless (Bluetooth) connected Dualshock 3 (Playstation 3) controller for operations like jogging, homing and manging jobs.
+ [1]: https://cnc.js.org
+ [2]: https://github.com/cncjs/cncjs-pendant-ps3
+ [3]: https://github.com/cmidgley/cncjs-pendant-ps3
+ [4]: https://github.com/balthisar/cncjs-pendant-gamepad
+ [5]: http
 
-## Fork information
+Provides support for the use of a generic gamepad as a wireless/Bluetooth or USB pendant for [CNC.js][1], allowing for operations like jogging, homing and managing jobs.
 
-This is a fork of the original [cncjs-pendant-ps3 driver](https://github.com/cncjs/cncjs-pendant-ps3), which adds the following features:
 
-* Abstracted gcode to allow for support of different controllers and machines
-    * Currently supports Grbl and Marlin
-    * Don't have the controller you need?  Consider adding one - it's easy!
-* Substantial improvements to README documentation
-* Handles clone PS3 controllers (see --clone)
-* New debugging features (see --fakeSocket and --verbose)
-* Auto-reconnect to pendant if connection fails
-* Added computed feed speed based on distance to travel to have gantry that quickly respond to changes (for Marlin)
+Controller Support
+------------------
 
---------------------------------------
+**Currently, only grbl is officially supported. _Please help_.** It’s highly likely that Marlin works (it looks okay, but I only use Marlin with a printer, so I can’t test it), but I have no idea how to implement/test Smoothieware and TinyG controllers. Please feel free to fork and tweak and submit a PR, or send me a controller. Confirmation that Marlin is good to go would be appreciated, too.
 
-# Button map
 
-![Button Map](images/cncjs-button-map.png)
+Fork Information
+----------------
 
-[PS3 CNC Control Button Map](https://docs.google.com/drawings/d/1DMzfBk5DSvjJ082FrerrfmpL19-pYAOcvcmTbZJJsvs/edit?usp=sharing)
+This is a continuing fork of the original [cncjs-pendant-ps3 by Austin St. Aubin][2] and [the updated but unfinished fork by Chris Midgley][3], and is currently maintained [here][4].
 
----------------------------------------
+This and previous forks intend to add the following features:
 
-# Controller setup
+- Works with any gamepad.
 
-I recommend always starting by USB configuration working before proceeding to Bluetooth wireless.
+    - Don’t have a supported gamepad? Consider adding one - it’s easy! Look
+      at `src/gamepad_controller.ts` for an example.
+      
+- Abstracted gcode to allow for support of different controllers and machines
 
-## USB configuration
+    - Currently supports Grbl and Marlin
+    
+    - Don’t have the controller you need?  Consider adding one - it’s easy!
+      Look at `src/gcode-marlin.ts` for an example.
+      
+- Added debugging features (see `--fake-socket` and `--verbose`).
 
-Plug the controller into one of the USB ports
+- Auto-reconnect to pendant if connection fails.
 
-### Test controller connectivity
-PS3 Controller: press the PS button, the lights on the front of the controller should flash for a couple of seconds then stop, leaving a single light on. If you now look again at the contents of /dev/input you should see a new device, probably called something like ‘js0’:
+- Made `--port (-p)`, `--baudrate (-b)` and `--controller-type (-t)` required 
+  parameters 
 
-```
-# List Devices
-ls /dev/input
-```
+- Added computed feed speed based on distance to travel to have gantry that
+  quickly respond to changes (required at least for Marlin)
 
-If this works, you should see something like this (most importantly, the "js0"):
+- Specify the z-probe touch plate thickness on the command line, if needed.
 
-```
-$ ls /dev/input
-event0  event1  event2  js0  mice  mouse0
-```
+Note also that this fork is in mid-transition to conversion to TypeScript. It’s
+not complete, and real programming discipline will be added incrementally.
 
-If the pendant is not connected, you might see:
 
-```
-$ ls /dev/input
-event0  mice  mouse0
-```
+Button Map
+----------
 
-### Get battery level (optional)
+Button mapping is as shown below. It’s significantly different than the default button mapping used in the original PS3 version of this pendant. It reflects how I use my machine, and it’s fairly easy to make changes to suit your own tastes in any case.
 
-This will display the current battery level, and proves that basic communication with the device is working.
+![Button Map](images/cncjs-pendant-gamepad.png)
 
-`cat "/sys/class/power_supply/sony_controller_battery_64:d4:bd:b3:9e:66/capacity"`
 
+Gamepad Setup
+-------------
 
-### Test using the joystick application (optional)
-```
-# Install
-sudo apt-get -y install joystick
+You should ensure that your operating system is already setup to recognize and use the gamepad of your choice. Consult the internet if you need help in this regard.
 
-# Usage / Test
-jstest /dev/input/js0
-```
-You will see a live output of the various switches and joysticks, and can test the operation of the joystick.  Break out with ^C when done.
+### Quick Connection Test 
 
-## Bluetooth configuration
+You can quickly test connectivity to your gamepad by performing:
 
-If the above works, you can proceed to finishing the install of cncjs-pendant-ps3 below or attempt to work through getting Bluetooth wireless working.  This can be done after installing and operating on USB if desired as no configuration will change on the pendant configuration otherwise.
+    ls /dev/input
 
-Word of caution - getting Bluetooth working can sometimes be a challenging process, especially if using a cheap PS3 clone.
+If this works, you should see something like this (most importantly, the `js0`):
 
-### Install
-```
-# Install & Enable Bluetooth Tools
-sudo apt-get install -y bluetooth libbluetooth3 libusb-dev
-sudo systemctl enable bluetooth.service
+    $ ls /dev/input
+    event0  event1  event2  js0  mice  mouse0
 
-# Add pi user to bluetooth group
-sudo usermod -G bluetooth -a pi
-```
+If the gamepad is not connected, you might see:
 
-### Pairing Tools
-```
-# Get and build the command line pairing tool (sixpair)
-wget http://www.pabr.org/sixlinux/sixpair.c
-gcc -o sixpair sixpair.c -lusb
+    $ ls /dev/input
+    event0  mice  mouse0
 
-### Connect PS3 over USB
-# Get PS3 DS 
-sudo ./sixpair
-```
 
-### Pairing Dualshock 3 controller
-See [Sony Dualshock](https://wiki.gentoo.org/wiki/Sony_Dualshock) for more details on configuration
-```
-### Disconnect Dualshock 3 over USB
+### Test using the joystick application
 
-# Start bluetoothctl:
-bluetoothctl
+    # Install
+    sudo apt-get -y install joystick
 
-# Enable the agent and set it as default:
-agent on
-default-agent
+    # Usage / Test
+    jstest /dev/input/js0
 
-# Power on the Bluetooth controller, and set it as discoverable and pairable:
-power on
-discoverable on
-pairable on
+You will see a live output of the various switches and joysticks, and can test the operation of the joystick.  Break out with `Ctrl-C` when done.
 
-### Connect Dualshock 3 over USB, and press the PlayStation button.
 
-# Discover the Dualshock 3 MAC address:
-devices
+Installation
+------------
 
-### Disonnect Dualshock 3 over USB
+Maybe I’ll add this to NPM when some type of stability is achieved, but for now, I recommend running locally so that you can tweak things.
 
-#Allow the service authorization request:
-#[agent]Authorize service service_uuid (yes/no): yes
+Just like CNCjs, this pendant is a Node.js script, so it’s likely you already have a working Node.js installation. This pendant is developed with Node.js 16, which is the newest LTS version as of this writing. Note that CNCjs works quite well on this version of Node.js.
 
-#Trust the Dualshock 3:
-#trust device_mac_address # Replace "MAC" with MAC of "Device 64:D4:BD:B3:9E:66 PLAYSTATION(R)3 Controller"
-trust 64:D4:BD:B3:9E:66 
+    git clone https://github.com/balthisar/cncjs-pendant-gamepad.git && cd cncjs-pendant-gamepad
+    npm install
 
-# The Dualshock 3 is now paired:
-quit
+Running this way, the main script won’t be in your path, so you can start it directly from the `bin/` directory:
 
-# Turn the Dualshock 3 off when it's no longer in use by pressing and holding the PlayStation button for 10 seconds.
-# Press the PlayStation button to use the Dualshock 3 again.
-```
+    bin/cncjs-pendant-gamepad.js -p /dev/ttyUSB0 -b 115200 -t grbl -vv run 
 
 
-----------------------------------------
+Running cncjs-pendant-gamepad
+-----------------------------
 
-# Install cncjs-pendant-ps3
+The program accepts several optional arguments. Too see all options run:
 
-Do the following to clone and install the cncjs-pendant-ps3 software:
+    cncjs-pendant-gamepad.js --help
 
-<!--
+The most important options are `--port (-p)` to specify the communications port to the controller, `--baudrate (-b)` to specify the connection speed, and `--controller-type (-t)` to specify the type of controller you are running (Marlin, Grbl, etc).
 
-```
-sudo apt-get install -y libudev-dev libusb-1.0-0 libusb-1.0-0-dev build-essential git
-sudo apt-get install -y gcc-4.8 g++-4.8 && export CXX=g++-4.8
-
-# Install cncjs-pendant-ps3
-sudo npm install -g cncjs-pendant-ps3 --unsafe-perm  # Install Globally
-```
--->
-```
-# Clone the github repo for cmidgley/cncjs-pendant-ps3
-cd ~
-git clone https://github.com/cmidgley/cncjs-pendant-ps3.git
-cd cncjs-pendant-ps3
-npm install -g
-```
-
-Note that there will be quite a few warnings, such as deprecated modules and compiler warnings.  You can ignore this for now, though someday work should be done fix this...!  Anyone want to attack this problem?!
-
-### If not installed globally, or no pendant found
-The Dualshock controller [does not use the joystick implementation](https://github.com/rdepena/node-Dualshock-controller), and requires node-hid with hidraw to be installed.  When installing this package globally, this often works.  But if installed locally, or you find that joystick testing works but cncjs-pendant-ps3 doesn't find any pendants when it starts up, you should try installing node-hid as follows:
-
-```
-# Install (node-hid --driver=hidraw) on cncjs-pendant-ps3
-# Start in directory that contains cncjs-pendant-ps3, such as:
-cd /usr/lib/node_modules/cncjs-pendant-ps3/
-sudo npm install node-hid --driver=hidraw --build-from-source --unsafe-perm
-```
-
-### Create udev rules
-
-In order to be able to [access the pendant as a non-root user](https://github.com/rdepena/node-Dualshock-controller#-create-udev-rules), you need to configure the udev rules.
-
-```
-# Run as Root
-sudo su
-
-# You will need to create a udev rule to be able to access the hid stream as a non root user.
-sudo touch /etc/udev/rules.d/61-Dualshock.rules
-sudo cat <<EOT >> /etc/udev/rules.d/61-Dualshock.rules
-SUBSYSTEM=="input", GROUP="input", MODE="0666"
-SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0268", MODE:="666", GROUP="plugdev"
-KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
-
-SUBSYSTEM=="input", GROUP="input", MODE="0666"
-SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE:="666", GROUP="plugdev"
-KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="plugdev"
-EOT
-
-# Reload the rules, then disconnect/connect the controller.
-sudo udevadm control --reload-rules
-
-exit
-```
-
-I recommend rebooting before continuing.  
-
-----------------------------------
-
-# Running cncjs-pendant-ps3
-
-The program accepts several optional arguments:
-* `-l, --list` List available ports and then exit
-* `-p, --port <port>` The port of the controller, such as /dev/ttyUSB0 or /dev/ACM0 (required)
-* `-b, --baudrate <baudrate>` The baudrate used when connecting to the controller (required)
-* `-t, --controllerType <type>` The type of controller (marlin, grbl, smoothie, tinyg) (required)
-* `-s, --secret <secret>` The secret API key for accessing the cncjs server.  If not specified, checks if environment variable CNCJS_SECRET is set, and if not, goes directly to the ~/.cncrc file to get the secret.  Generally can be ignored when cncjs and cncjs-pendant-ps3 are on the same server, but must be specified if they are operating on difference servers.
-* `--socketAddress <address>` The IP address / DNS name of the cncjs server (default: localhost) 
-* `--socketPort <port>` The port number of the cncjs server (default: 8000)
-* `--clone` if using a cloned PS3 controller you might get a write timout when starting up.  Disables writes to controller, so rumble and led status is disabled.
-* `--accessTokenLifetime <lifetime>` How long the access token should be generated, can generally be ignored.  In seconds or a time span string (default: 30d)
-* `-v, --verbose` Display verbose (debugging) messages
-* `-f, --fake` Use a fake socket server and display cncjs messages to console instead
-* `--help` bring up a help listing of all options
-
-The most important options are --port (-p) to specify the communications port to the controller, --baudrate (-b) to specify the connection speed, and --controllerType (-t) to specify the type of controller you are running (Marlin, Grbl, etc).  If you don't know your port number, use the --list (-l) option to see a list of ports to try.
-
-Here is how those options are used.  If CNC.js is already connected, the port is used to locate the existing connection and no reconnection or change is made to baudrate or controller.  However, if CNC.js is not connected, then these parameters are used to establish a connection to the controller.
+Here is how those options are used. If CNC.js is already connected, the port is used to locate the existing connection and no reconnection or change is made to baudrate or controller.  However, if CNC.js is not connected, then these parameters are used to establish a connection to the controller.
 
 To start the pendant server, run a command similar to this:
 
-```
-cd ~/cncjs-pendant-ps3
-node cncjs-pendant-ps3 -p /dev/ACM0 -b 250000 -clone -t marlin
-```
+    cncjs-pendant-gamepad.js -p /dev/ttyUSB0 -b 115200 -t grbl run
 
-## First use recommendation
 
-I recommend running cncjs-pendant-ps3 using the --fakeServer (or -f) first, as you can see the commands being sent (such as gcode or operations such as stop) without moving the actual gantry.  This is very useful to prove that everything is working and helps as a teaching aid while getting used to using the controls.
+First use recommendation
+------------------------
 
-----------------------------------------
+I recommend running `cncjs-pendant-gamepad` using the `simulate` command, as you can see the commands being sent (such as gcode or operations such as stop) without moving the actual gantry.  This is very useful to prove that everything is working and helps as a teaching aid while getting used to using the controls.
 
-# Configuring for auto-start
 
-There are many ways in Linux to configure auto-start on boot.  This example shows using [Production Process Manager [PM2]](http://pm2.io):
+Configuring for auto-start
+--------------------------
 
-```
-# Install Production Process Manager [PM2]
-npm install pm2 -g
+Assuming you’ve got CNCjs set to autostart according to its own instructions, the simplest way to autostart this pendant is do use PM2, too:
 
-# Setup PM2 Startup Script
-pm2 startup debian
-  #[PM2] You have to run this command as root. Execute the following command:
-  sudo su -c "env PATH=$PATH:/home/pi/.nvm/versions/node/v4.5.0/bin pm2 startup debian -u pi --hp /home/pi"
+    pm2 start cncjs-pendant-gamepad.js -p /dev/ttyUSB0 -b 115200 -t grbl
+    pm2 save
 
-# Start Dual Shock / PS3 Bluetooth Remote Pendant for CNCjs (conected to serail device @ /dev/ttyUSB0) with PM2
-pm2 start $(which cncjs-pendant-ps3) -- -p "/dev/ttyUSB0"
 
-# Set current running apps to startup
-pm2 save
+Tweaking/Customizing
+--------------------
 
-# Get list of PM2 processes
-pm2 list
-```
+### Building
+
+This pendant is written using TypeScript, which is a Javascript superset. The source code in `src/` can be compiled into plain Javascript by:
+
+    tsc
+
+If nothing seems to happen, delete the `tsconfig.tsbuildinfo` file, which holds incremental build information.
+
+### Code Overview
+
+Tweaking should be relatively straight forward. The code is liberally commented, and interesting constants are at the top of files.
+
+- `cncjs-pendant-gamepad.js` (in the `/bin` directory) simply calls `console`.
+
+- `console` handles the command line interface and creates the rest of the program.
+
+- `gamepad_controller` receives input from a game controller and creates events based on them.
+
+- `actions` receives events from the controller, and contains the logic for making requests of the gcode sender.
+
+- `gcode-sender` is the base class for controller-specific gcode senders. It contains methods that control CNCjs and/or your controller.
+
+
+### Adding game controllers
+
+You can run in `simulate` mode with lots of verbosity (`-vvv`) to have a look at keycodes for your particular controller. Then you can add it to the `controllerMapping` structure in the `gamepad_controller.ts` file.
+
+
+### Adding CNC controllers
+
+You should subsclass from the `GcodeSender` class and override the default implementation of methods that aren’t suitable for your own machine.
+
+You should also update the CLI in `console` so that you can select the new machine.
+
+Finally, in `actions` you can see how `GcodeGrbl` and `GcodeMarlin` are included and instantiated, and do the same for your new class.
+
+Supporting Smoothieware and TinyG should be priorities, and any changes to Marlin that are needed would be appreciated,.

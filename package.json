@@ -1,45 +1,42 @@
 {
-  "name": "cncjs-pendant-ps3",
-  "version": "1.0.9.1",
-  "description": "A cncjs pendant using the Playstation 3 Dualshock Controller / SIXAXIS Controller.",
-  "license": "MIT",
-  "main": "./index.js",
-  "engines": {
-    "node": ">=6"
-  },
-  "bin": {
-    "cncjs-pendant-ps3": "./bin/cncjs-pendant-ps3"
-  },
-  "preferGlobal": true,
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cncjs/cncjs-pendant-ps3.git"
-  },
+  "name": "cncjs-pendant-gamepad",
+  "description": "A cncjs pendant using a supported gamepad.",
   "keywords": [
     "cncjs",
     "pendant",
-    "ps3"
+    "gamepad"
   ],
-  "author": "Austin St. Aubin <AustinSaintAubin@gmail.com>",
-  "bugs": {
-    "url": "https://github.com/cncjs/cncjs-pendant-ps3/issues"
+  "version": "2.0.0-dev.1",
+  "license": "MIT",
+  "contributors": [
+    "Jim Derry <balthisar@gmail.com>",
+    "Austin St. Aubin <austinsaintaubin@gmail.com>",
+    "Chris Midgley <chris@koose.com>"
+  ],
+  "homepage": "https://github.com/balthisar/cncjs-pendant-gamepad#readme",
+  "bugs": "https://github.com/balthisar/cncjs-pendant-gamepad/issues",
+  "repository": "github:balthisar/cncjs-pendant-gamepad",
+  "type": "module",
+  "engines": {
+    "node": ">=12"
   },
-  "homepage": "https://github.com/cncjs/cncjs-pendant-ps3#readme",
+  "bin": "bin/cncjs-pendant-gamepad.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node-gyp build"
+  },
   "dependencies": {
-    "commander": "^2.9.0",
-    "inquirer": "^3.0.1",
-    "jsonwebtoken": "^7.2.1",
-    "lodash.get": "^4.4.2",
-    "serialport": "^4.0.7",
-    "socket.io-client": "^1.7.2",
-    "vorpal": "^1.11.4",
-    "dualshock-controller": "^1.1.1",
-    "node-gyp": "^3.5.0",
-    "node-pre-gyp": "^0.6.33",
-    "node-hid": "^0.5.4 --driver=hidraw --build-from-source"
+    "bindings": "^1.5.0",
+    "commander": "^9.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "nan": "^2.15.0",
+    "npmlog": "^6.0.1",
+    "socket.io-client": "^2.4.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/bindings": "^1.5.1",
+    "@types/jsonwebtoken": "^8.5.8",
+    "@types/node": "^17.0.21",
+    "@types/npmlog": "^4.1.4"
+  }
 }

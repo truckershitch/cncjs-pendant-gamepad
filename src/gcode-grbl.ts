@@ -13,10 +13,9 @@ export class GcodeGrbl extends GcodeSender {
 
   //----------------------------------------------------------------------------
   // move gantry: relative movement
-  //  Override the base class implementation to use
-  //  grbl-specific `$J=`ogging notation. We're also
-  //  going to slow the speed down just slightly so
-  //  that we can keep the planner full.
+  //  Override the base class implementation to use grbl-specific `$J=`ogging
+  //  notation. We're also going to slow the speed down just slightly so that
+  //  we can keep the planner full.
   //----------------------------------------------------------------------------
   override moveGantryJogToXYZ(x: number, y: number, z: number, mmPerMin: number) {
     this.sendMessage('command', 'gcode', 'G21');  // set to millimeters

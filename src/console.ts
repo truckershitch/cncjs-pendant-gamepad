@@ -136,7 +136,6 @@ function demoLogging() {
 //----------------------------------------------------------------------------
 // ESM import doesn't allow JSON, and the old `require` doesn't work unless
 // we re-enable it manually. Now we can bring in our package.json file.
-// Note: Typescript 
 //----------------------------------------------------------------------------
 function programVersion(): string {
   const oldRequire = createRequire(import.meta.url);

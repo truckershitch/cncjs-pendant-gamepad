@@ -28,7 +28,7 @@ const LOGPREFIX = 'GAMEPAD  '; // keep at 9 digits for consistency
 // While this _could_ be loaded from a file, let's not bother with that
 // complexity right now, as this API is a moving target.
 //
-// You can run this enclosing program in `-vvv` and `simulaate` mode to
+// You can run this enclosing program in `-vvv` and `simulate` mode to
 // consult the log output for mapping new controllers.
 //------------------------------------------------------------------------------
 const controllerMapping = {
@@ -176,7 +176,7 @@ export interface GamepadState {
 
 //------------------------------------------------------------------------------
 // Instances of this class receive events and event records when gamepad
-// events occur. Consult the events you can subsribe to in the `on())`
+// events occur. Consult the events you can subscribe to in the `on())`
 // function.
 //------------------------------------------------------------------------------
 export class GamepadController {

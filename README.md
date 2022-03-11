@@ -134,7 +134,7 @@ Configuring for auto-start
 
 Assuming you’ve got CNCjs set to autostart according to its own instructions, the simplest way to autostart this pendant is do use PM2, too:
 
-    pm2 start cncjs-pendant-gamepad.js -p /dev/ttyUSB0 -b 115200 -t grbl
+    pm2 start --name pendant $(which node) -- $(which cncjs-pendant-gamepad) -p /dev/ttyUSB0 -b 115200 -t grbl -vvv
     pm2 save
 
 

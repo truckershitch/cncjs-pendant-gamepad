@@ -13,7 +13,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/bin/cncjs-pendant-gamepad",
-            "args": ["-p", "/dev/ttyUSB0", "-b", "115200", "-t", "grbl", "-vvv", "simulate"]
+            "args": ["-p", "/dev/ttyUSB0", "-b", "115200", "-t", "grbl", "-v", "simulate"]
         },
         {
             "type": "pwa-node",
@@ -24,7 +24,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/bin/cncjs-pendant-gamepad",
-            "args": ["-p", "/dev/ttyUSB0", "-b", "115200", "-t", "grbl", "-vvv"]
+            "args": ["-p", "/dev/ttyUSB0", "-b", "115200", "-t", "grbl", "-v"]
         },
         {
             "type": "pwa-node",

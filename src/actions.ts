@@ -35,8 +35,8 @@ const VXY_LOW = 300 * JOG_INTERVAL / 60000;  // mm/minute in terms of mm/interva
 const VXY_MED = 3000 * JOG_INTERVAL / 60000; // mm/minute in terms of mm/interval, medium velocity.
 const CXY_LOW = 0.5;                         // single impulse distance, slow.
 const CXY_MED = 1.0;                         // single impluse distance, medium.
-const VZ_LOW = 300 * JOG_INTERVAL / 60000;   // mm/minute in terms of mm/interval, z-axis,
-const VZ_MED = 1000 * JOG_INTERVAL / 60000;  // mm/minute in terms of mm/interval, z-axis,
+const VZ_LOW = 250 * JOG_INTERVAL / 60000;   // mm/minute in terms of mm/interval, z-axis,
+const VZ_MED = 500 * JOG_INTERVAL / 60000;   // mm/minute in terms of mm/interval, z-axis,
 const CZ_LOW = 0.1;                          // single impulse distance, z-axis.
 const CZ_MED = 1.0;                          // single impulse distance, z-axis.
 
@@ -46,7 +46,7 @@ const CREEP_INTERVAL = 250;                  // delay before continuous movement
 // Interface definitions.
 //----------------------------------------------------------------------------
 // A simple record that indicates the next jogging motion destination.
-class XYZCoords {
+export class XYZCoords {
   move_x_axis: number = 0.0;
   move_y_axis: number = 0.0;
   move_z_axis: number = 0.0;
@@ -113,45 +113,47 @@ export class Actions {
   onUse(id: string, state: GamepadState) {
     const a = state.axisStates;        // dereference for easy access.
     const b = state.buttonStates;      // dereference for easy access.
-    const shiftKey = b.KEYCODE_HOME;   // used as a modifier button.
     let ai = new XYZCoords;            // mm to move each axis.
 
     //------------------------------------------------------------
-    // We won't allow any movement unless an appropriate button 
-    // is pressed to allow it. Note that this isn't an E-Stop;
-    // letting go of the deadman mid-move won't necessarily stop
-    // motion and won't turn off the spindle or other tooling.
-    // Only one button need be held down in order to allow for
-    // handedness. The "trigger" button enables higher-speed
-    // movement compared to the lower-speed speed "bumper"
-    // buttons. If both high and low speeds are selected, the
-    // low (safe) speed will be used.
+    // Collect all of the modifier key states. 
     //------------------------------------------------------------
 
     const deadmanSlow = b.KEYCODE_BUTTON_L1 || b.KEYCODE_BUTTON_R1;
-    const deadmanFast = b.KEYCODE_BUTTON_LTRIGGER || b.KEYCODE_BUTTON_RTRIGGER
-     || a.AXIS_LTRIGGER == 1 || a.AXIS_RTRIGGER == 1
-     && !deadmanSlow;
-    const deadman = deadmanFast || deadmanSlow;
-
-    const deadmanOnly = deadman && !shiftKey;
-    const shiftKeyOnly = !deadman && shiftKey;
-    const unmodified = !deadman && !shiftKey;
+    const deadmanFast = b.KEYCODE_BUTTON_LTRIGGER || b.KEYCODE_BUTTON_RTRIGGER || a.AXIS_LTRIGGER == 1 || a.AXIS_RTRIGGER == 1
+    const deadmanZ = deadmanSlow && deadmanFast;
+    const deadmanXY = (deadmanSlow || deadmanFast) && !deadmanZ;
+    const shiftKey = b.KEYCODE_HOME;
+    const shiftKeyOnly = shiftKey && !deadmanSlow && !deadmanFast;
+    const deadmanXYOnly = deadmanXY && !shiftKey;
+    const deadmanZOnly = deadmanZ && !shiftKey;
+    const unmodified = !deadmanSlow && !deadmanFast && !shiftKey;
 
     //------------------------------------------------------------
-    // Determine appropriate jog and creep values.
+    // Determine appropriate jog and creep values for the axes
+    // X and Y, determined by the deadman key that's being used.
+    // This isn't enabling motion yet, just selecting a speed in
+    // case we select motion later.
     //------------------------------------------------------------
 
     const jogVelocity = deadmanSlow ? VXY_LOW : VXY_MED;
     const creepDist = deadmanSlow ? CXY_LOW : CXY_MED;
 
-    const jogVelocityZ = deadmanSlow ? VZ_LOW : VZ_MED;
-    const creepDistZ = deadmanSlow ? CZ_LOW : CZ_MED;
+    //------------------------------------------------------------
+    // Determine appropriate jog and creep values for the Z axis.
+    // This is determined by which hat button is used. This isn't
+    // enabling motion yet, just selecting a speed in case we 
+    // select motion later, so it doesn't matter if the key we're
+    // testing is doing something else this round.
+    //------------------------------------------------------------
+
+    const jogVelocityZ = a.AXIS_HAT_X ? VZ_LOW : VZ_MED;
+    const creepDistZ = a.AXIS_HAT_X ? CZ_LOW : CZ_MED;
 
     //------------------------------------------------------------
     // Enable/Disable axis movement via the thumb buttons. The 
     // redundant check ensures that we only detect this button 
-    // press when the event actually occurs (not whien wiggling
+    // press when the event actually occurs (not when wiggling
     // the stick), and only on down and not up.
     //------------------------------------------------------------
 
@@ -165,7 +167,8 @@ export class Actions {
       this.thumbRightActive = false;
       log.debug(LOGPREFIX, `Left Thumb Enabled:${this.thumbLeftActive}, Right Thumb Enabled:${this.thumbRightActive}`);
     }
-    if (deadman && (id === 'AXIS_HAT_X' || id === 'AXIS_HAT_Y')) {
+    // For safety, if the dpad is going to cause movement, disable the sticks.
+    if ((deadmanXY || deadmanZ) && (id === 'AXIS_HAT_X' || id === 'AXIS_HAT_Y')) {
       this.thumbLeftActive = false;
       this.thumbRightActive = false;
       log.debug(LOGPREFIX, `Left Thumb Enabled:${this.thumbLeftActive}, Right Thumb Enabled:${this.thumbRightActive}`);
@@ -177,12 +180,12 @@ export class Actions {
     // provide their own vector.
     //--------------------------------------------------
 
-    if (deadmanOnly) {
+    if (deadmanXYOnly) {
       if (a.AXIS_HAT_X) {
         ai.move_x_axis = a.AXIS_HAT_X * jogVelocity;
       }
-      // If the axis was _just_ clicked, instead perform an initial creeper
-      // creeper movement, and restart the interval in order to provide a delay.
+      // If the axis was /just/ clicked, instead perform an initial creeper
+      // movement, and restart the interval in order to provide a delay.
       if (a.AXIS_HAT_X && id === 'AXIS_HAT_X') {
         clearTimeout(this.jogTimer);
         const d = creepDist * a.AXIS_HAT_X;
@@ -203,12 +206,12 @@ export class Actions {
     // provide their own vector.
     //--------------------------------------------------
 
-    if (deadmanOnly) {
+    if (deadmanXYOnly) {
       if (a.AXIS_HAT_Y) {
         ai.move_y_axis = -(a.AXIS_HAT_Y * jogVelocity);
       }
-      // If the axis was _just_ clicked, instead perform an initial creeper
-      // creeper movement, and restart the interval in order to provide a delay.
+      // If the axis was /just/ clicked, instead perform an initial creeper
+      // movement, and restart the interval in order to provide a delay.
       if (a.AXIS_HAT_Y && id === 'AXIS_HAT_Y') {
         clearTimeout(this.jogTimer);
         const d = creepDist * -a.AXIS_HAT_Y;
@@ -226,26 +229,36 @@ export class Actions {
     //--------------------------------------------------
     // Handle Z axis movement.
     // Axis values range from -1 to 0 to 1, and so they
-    // provide their own vector.
+    // provide their own vector. Because we're using
+    // two possibly opposing gamepad axes to control a
+    // physical axis, ensure that conflicts are resolved
+    // in favor of AXIS_HAT_X.
     //--------------------------------------------------
 
-    if (deadman && shiftKey) {
-      if (a.AXIS_HAT_Y) {
+    if (deadmanZOnly) {
+      if (a.AXIS_HAT_X) {
+        ai.move_z_axis = (a.AXIS_HAT_X * jogVelocityZ);
+      }
+      // If the axis was /just/ clicked, instead perform an initial creeper
+      // movement, and restart the interval in order to provide a delay.
+      if (a.AXIS_HAT_X && id === 'AXIS_HAT_X') {
+        clearTimeout(this.jogTimer);
+        const d = creepDistZ * a.AXIS_HAT_X;
+        this.jogGantry(0, 0, d);
+        this.jogTimer = setTimeout( this.jogFunction.bind(this), CREEP_INTERVAL );
+      }
+
+      if (a.AXIS_HAT_Y && !a.AXIS_HAT_X) {
         ai.move_z_axis = -(a.AXIS_HAT_Y * jogVelocityZ);
       }
-      // If the axis was _just_ clicked, instead perform an initial creeper
-      // creeper movement, and restart the interval in order to provide a delay.
-      if (a.AXIS_HAT_Y && id === 'AXIS_HAT_Y') {
+      // If the axis was /just/ clicked, instead perform an initial creeper
+      // movement, and restart the interval in order to provide a delay.
+      if (a.AXIS_HAT_Y && !a.AXIS_HAT_X && id === 'AXIS_HAT_Y') {
         clearTimeout(this.jogTimer);
         const d = creepDistZ * -a.AXIS_HAT_Y;
         this.jogGantry(0, 0, d);
         this.jogTimer = setTimeout( this.jogFunction.bind(this), CREEP_INTERVAL );
       }
-
-      if (a.AXIS_HAT_X == -1)
-        this.gcodeSender.performProbing();
-      else if (a.AXIS_HAT_X == 1)
-        this.gcodeSender.moveZedZero();
     }
 
     //==================================================
@@ -255,6 +268,21 @@ export class Actions {
 
     this.gamepadState = state;
     this.axisInstructions = ai;
+
+    //--------------------------------------------------
+    // Handle the dpad buttons when shifted.
+    //--------------------------------------------------
+    if (shiftKeyOnly) {
+      if (id === 'AXIS_HAT_X' && a.AXIS_HAT_X === -1 )
+        this.gcodeSender.recordGantryZeroWCSX();
+      if (id === 'AXIS_HAT_X' && a.AXIS_HAT_X === 1 )
+        this.gcodeSender.recordGantryZeroWCSY();
+      if (id === 'AXIS_HAT_Y' && a.AXIS_HAT_Y === -1 )
+        this.gcodeSender.recordGantryZeroWCSZ();
+      if (id === 'AXIS_HAT_Y' && a.AXIS_HAT_Y === 1 )
+        this.gcodeSender.performZProbing();
+    }
+
 
     //--------------------------------------------------
     // Handle the back/select and start/forward buttons
@@ -271,7 +299,7 @@ export class Actions {
         this.gcodeSender.controllerCyclestart();
       else if (unmodified)
         this.gcodeSender.controllerFeedhold();
-      else if (deadmanOnly)
+      else if (deadmanXYOnly)
         this.gcodeSender.performHoming();
 
     //--------------------------------------------------
@@ -285,12 +313,12 @@ export class Actions {
       if (id === 'KEYCODE_BUTTON_A' && b.KEYCODE_BUTTON_A)
         this.gcodeSender.recordGantryReturn();
       else if (id === 'KEYCODE_BUTTON_B' && b.KEYCODE_BUTTON_B)
-        this.gcodeSender.recordGantryZProbePos();
+        { /* noop, but add your own functionality if you like. */ }
       else if (id === 'KEYCODE_BUTTON_X' && b.KEYCODE_BUTTON_X)
-        this.gcodeSender.recordGantryWCSHome();
+        { /* noop, but add your own functionality if you like. */ }
       else if (id === 'KEYCODE_BUTTON_Y' && b.KEYCODE_BUTTON_Y)
         this.gcodeSender.recordGantryHome();
-    } else if (deadmanOnly) {
+    } else if (deadmanXYOnly) {
       if (id === 'KEYCODE_BUTTON_A' && b.KEYCODE_BUTTON_A)
         this.gcodeSender.moveGantryReturn();
       else if (id === 'KEYCODE_BUTTON_B' && b.KEYCODE_BUTTON_B)
@@ -301,11 +329,11 @@ export class Actions {
         this.gcodeSender.moveGantryHome();
     } else if (unmodified) {
       if (id === 'KEYCODE_BUTTON_A' && b.KEYCODE_BUTTON_A)
-        this.gcodeSender.controllerResume();
+        this.gcodeSender.controllerStart();
       else if (id === 'KEYCODE_BUTTON_B' && b.KEYCODE_BUTTON_B)
         this.gcodeSender.controllerStop();
       else if (id === 'KEYCODE_BUTTON_X' && b.KEYCODE_BUTTON_X)
-        this.gcodeSender.controllerStart();
+        this.gcodeSender.controllerResume();
       else if (id === 'KEYCODE_BUTTON_Y' && b.KEYCODE_BUTTON_Y)
         this.gcodeSender.controllerPause();
     }

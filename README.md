@@ -35,17 +35,22 @@ This and previous forks intend to add the following features:
     - Don’t have the controller you need?  Consider adding one - it’s easy!
       Look at `src/gcode-marlin.ts` for an example.
       
-- Added debugging features (see `--fake-socket` and `--verbose`).
+- Added debugging features (see `simulate` command and `--verbose` flag).
 
 - Auto-reconnect to pendant if connection fails.
 
 - Made `--port (-p)`, `--baudrate (-b)` and `--controller-type (-t)` required 
   parameters 
 
-- Added computed feed speed based on distance to travel to have gantry that
-  quickly respond to changes (required at least for Marlin)
-
 - Specify the z-probe touch plate thickness on the command line, if needed.
+
+- More intuitive button mapping versus the original -ps3 version of this.
+
+- Grbl-specific enhancements (because they're what I can test):
+
+  - Improved Z probing precision.
+
+  - Improved jogging using jogging-specific movement syntax.
 
 Note also that this fork is in mid-transition to conversion to TypeScript. It’s
 not complete, and real programming discipline will be added incrementally.

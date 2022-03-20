@@ -17,7 +17,6 @@ import log from "npmlog";
 //------------------------------------------------------------------------------
 const LOGPREFIX = 'GCODESNDR'; // keep at 9 digits for consistency
 const ZSAFEPOS = -5.0;         // machine Z coordinate deemed safe for travel.
-const ZSAFEV = 500;            // move to ZSAFEPOS velocity.
 
 
 //------------------------------------------------------------------------------
@@ -27,10 +26,12 @@ const ZSAFEV = 500;            // move to ZSAFEPOS velocity.
 export class GcodeSender {
   options: Options;
   connector: Connector;
+  zsafepos: number;
 
   constructor(actions: Actions) {
     this.options = actions.options;
     this.connector = actions.connector;
+    this.zsafepos = ZSAFEPOS;
     }
   
   //--------------------------------------------------
@@ -122,15 +123,11 @@ export class GcodeSender {
 
 
   //--------------------------------------------------
-  // move gantry: home position
-  //  We'll use the G30 command to move to the home
-  //  position (instead of a G53 offset). Our command
-  //  should get to a safe Z height before starting
-  //  to move XY.
+  // move gantry: machine home position
   //--------------------------------------------------
   moveGantryHome() {
-    this.sendMessage('command', 'gcode', `G0 G53 Z${ZSAFEPOS} F${ZSAFEV}`);
-    this.sendMessage('command', 'gcode', `G30`);
+    this.sendMessage('command', 'gcode', `G28 Z${this.zsafepos}`);
+    this.sendMessage('command', 'gcode', `G28`);
   }
 
 
@@ -154,45 +151,33 @@ export class GcodeSender {
 
   //--------------------------------------------------
   // move gantry: return position
-  //  Move to the return position, going to a safe Z
-  //  height before moving XY.
   //--------------------------------------------------
   moveGantryReturn() {
-    this.sendMessage('command', 'gcode', `G0 G53 Z${ZSAFEPOS} F${ZSAFEV}`);
-    this.sendMessage('command', 'gcode', `G28`);
+    this.sendMessage('command', 'gcode', `G30 Z${this.zsafepos}`);
+    this.sendMessage('command', 'gcode', `G30`);
   }
 
 
   //--------------------------------------------------
-  // move gantry: WCS current 0,0,5 (G54)
+  // move gantry: WCS current 0,0,0
   //  Move to the currently defined G54 position.
   //  Ensure that we're at a safe Z height before
   //  moving anywhere else.
   //--------------------------------------------------
   moveGantryWCSHome() {
-    this.sendMessage('command', 'gcode', `G0 G53 Z${ZSAFEPOS} F${ZSAFEV}`);
-    this.sendMessage('command', 'gcode', 'G0 G90 G54 X0 Y0');
+    this.sendMessage('command', 'gcode', `G53 G0 G90 Z${this.zsafepos}`);
+    this.sendMessage('command', 'gcode', 'G54 G0 G90 X0 Y0');
   }
 
 
   //--------------------------------------------------
   // move gantry: z probe position
-  //  Move to the currently defined G55 position.
-  //  Ensure that we're at a safe Z height before
-  //  moving anywhere else.
+  //  Move to the currently defined z probe position.
+  //  This is a noop, but is implemented in the grbl
+  //  sender.
   //--------------------------------------------------
   moveGantryZProbePos() {
-    this.sendMessage('command', 'gcode', `G0 G53 Z${ZSAFEPOS} F${ZSAFEV}`);
-    this.sendMessage('command', 'gcode', 'G0 G90 G55 X0 Y0');
-  }
 
-  //--------------------------------------------------
-  // move z: zero position
-  //  Move only the Z axis to the Z safe position,
-  //  which should be close to home.
-  //--------------------------------------------------
-  moveZedZero() {
-    this.sendMessage('command', 'gcode', `G0 G53 Z${ZSAFEPOS} F${ZSAFEV}`);
   }
 
 
@@ -207,42 +192,51 @@ export class GcodeSender {
   //--------------------------------------------------
   // execute a probe operation
   //--------------------------------------------------
-  performProbing() {
+  performZProbing() {
     const dz = Number(this.options.zProbeThickness) + 0.001;
     this.sendMessage('command', 'gcode', 'G91');                   // relative coordinates
-    this.sendMessage('command', 'gcode', 'G38.2 Z-15.001 F120');   // probe toward stock
-    this.sendMessage('command', 'gcode', 'G90');                   // back to absolute coordinates
+    this.sendMessage('command', 'gcode', 'G38.2 Z-50 F120');       // probe toward stock
     this.sendMessage('command', 'gcode', `G10 L20 P1 Z${dz}`);     // state that current Z is `dz`
-    this.sendMessage('command', 'gcode', 'G91');                   // relative coordinates
     this.sendMessage('command', 'gcode', 'G0 Z3');                 // lift up just a bit
     this.sendMessage('command', 'gcode', 'G90');                   // back to absolute coordinates
+  }
+
+
+  //--------------------------------------------------
+  // Zero out the work offset for X.
+  //--------------------------------------------------
+  recordGantryZeroWCSX() {
+    this.sendMessage('command', 'gcode', 'G10 L20 P1 X0');
+  }
+
+
+  //--------------------------------------------------
+  // Zero out the work offset for Y.
+  //--------------------------------------------------
+  recordGantryZeroWCSY() {
+    this.sendMessage('command', 'gcode', 'G10 L20 P1 Y0');
+  }
+
+
+  //--------------------------------------------------
+  // Zero out the work offset for Z.
+  //--------------------------------------------------
+  recordGantryZeroWCSZ() {
+    this.sendMessage('command', 'gcode', 'G10 L20 P1 Z0');
+  }
+
+
+  //--------------------------------------------------
+  // record current position as near machine home.
+  //--------------------------------------------------
+  recordGantryHome() {
+    this.sendMessage('command', 'gcode', 'G28.1');
   }
 
   //--------------------------------------------------
   // record current position as the return position.
   //--------------------------------------------------
   recordGantryReturn() {
-    this.sendMessage('command', 'gcode', 'G28.1');
-  }
-
-  //--------------------------------------------------
-  // record current position as a place to probe z.
-  //--------------------------------------------------
-  recordGantryZProbePos() {
-    this.sendMessage('command', 'gcode', 'G10 P2 L20 X0 Y0 Z0');
-  }
-
-  //--------------------------------------------------
-  // record current position as part 0,0.
-  //--------------------------------------------------
-  recordGantryWCSHome() {
-    this.sendMessage('command', 'gcode', 'G10 P1 L20 X0 Y0 Z0');
-  }
-
-  //--------------------------------------------------
-  // record current position as near machine home.
-  //--------------------------------------------------
-  recordGantryHome() {
     this.sendMessage('command', 'gcode', 'G30.1');
   }
 

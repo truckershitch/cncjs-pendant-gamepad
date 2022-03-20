@@ -160,12 +160,26 @@ export class Connector {
     });
 
     //------------------------------------------------------------------------
-    // we got an error attempting to open the serial port
+    // We got an error attempting to open the serial port
     //------------------------------------------------------------------------
     this.subscribeMessage('serialport:error', () => {
       this.serialConnected = false;
-      log.error(this.logPrefix, `'Error opening serial port ${this.options.port}`);
+      log.error(this.logPrefix, `Error opening serial port ${this.options.port}`);
       this.openSerial();
+    });
+
+    //------------------------------------------------------------------------
+    // Something was read from the serial port.
+    //------------------------------------------------------------------------
+    this.subscribeMessage('serialport:read', (data: string) => {
+      log.trace(this.logPrefix, `Read from serial port: ${data}`);
+    });
+
+    //------------------------------------------------------------------------
+    // Something was written to the serial port.
+    //------------------------------------------------------------------------
+    this.subscribeMessage('serialport:write', (data: string) => {
+      log.trace(this.logPrefix, `Write to serial port: ${data}`);
     });
 
     //------------------------------------------------------------------------

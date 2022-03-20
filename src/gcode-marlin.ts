@@ -15,7 +15,7 @@ export class GcodeMarlin extends GcodeSender {
     this.sendMessage('command', 'gcode', 'G28 X Y');
   }
   
-  override performProbing() {
+  override performZProbing() {
     this.sendMessage('command', 'gcode', 'M28 Z'); // use a simple touch plate
   }
   

@@ -126,7 +126,7 @@ export class GcodeSender {
   // move gantry: machine home position
   //--------------------------------------------------
   moveGantryHome() {
-    this.sendMessage('command', 'gcode', `G28 Z${this.zsafepos}`);
+    this.sendMessage('command', 'gcode', `G53 G0 G90 Z${this.zsafepos}`);
     this.sendMessage('command', 'gcode', `G28`);
   }
 
@@ -153,7 +153,7 @@ export class GcodeSender {
   // move gantry: return position
   //--------------------------------------------------
   moveGantryReturn() {
-    this.sendMessage('command', 'gcode', `G30 Z${this.zsafepos}`);
+    this.sendMessage('command', 'gcode', `G53 G0 G90 Z${this.zsafepos}`);
     this.sendMessage('command', 'gcode', `G30`);
   }
 

@@ -23,7 +23,9 @@
   "bin": "bin/cncjs-pendant-gamepad.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node-gyp build"
+    "build": "node-gyp build",
+    "prepare": "npm run build-ts",
+    "build-ts": "tsc"
   },
   "dependencies": {
     "bindings": "^1.5.0",

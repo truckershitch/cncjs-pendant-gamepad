@@ -118,7 +118,7 @@ function configureCLI(cli: Command, version: string) {
 //--------------------------------------------------------------------------
 // Get a Javascript object from the given JSON file.
 //--------------------------------------------------------------------------
-function loadOptionsFile(filename: string, optionsVersion : string) : Options {
+function loadOptionsFile(filename: any, optionsVersion : string) : Options {
   try {
     const rawData = fs.readFileSync(filename, "utf8");
     const result = JSON.parse(rawData)[optionsVersion];
@@ -138,11 +138,11 @@ function loadOptionsFile(filename: string, optionsVersion : string) : Options {
 function getFileOptions(optionsVersion : string) : Options {
   if (os.platform() == 'win32') {
     const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'), optionsVersion);
-    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
+    const dfltOpts = loadOptionsFile(new URL('cncjs-pendant-gamepad.rc.json', import.meta.url), optionsVersion)
     const result = merge.all([dfltOpts, userOpts]);
     return result as Options;
   } else {
-    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
+    const dfltOpts = loadOptionsFile(new URL('cncjs-pendant-gamepad.rc.json', import.meta.url), optionsVersion)
     const systOpts = loadOptionsFile(path.resolve('/', 'etc', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
     const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'), optionsVersion);
     const result = merge.all([dfltOpts, systOpts, userOpts]);

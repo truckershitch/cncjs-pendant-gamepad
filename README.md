@@ -39,9 +39,6 @@ This and previous forks intend to add the following features:
 
 - Auto-reconnect to pendant if connection fails.
 
-- Made `--port (-p)`, `--baudrate (-b)` and `--controller-type (-t)` required 
-  parameters 
-
 - Specify the z-probe touch plate thickness on the command line, if needed.
 
 - More intuitive button mapping versus the original -ps3 version of this.
@@ -126,6 +123,23 @@ Here is how those options are used. If CNC.js is already connected, the port is 
 To start the pendant server, run a command similar to this:
 
     cncjs-pendant-gamepad.js -p /dev/ttyUSB0 -b 115200 -t grbl run
+
+
+Configuration Files
+-------------------
+
+You can use a JSON configuration file instead of or in addition to the command line parameters. CLI parameters, if used, will override anything in the configuration file. This file must be named `.cncjs-pendant-gamepad.rc.json` and be present in your top level home directory (for example, `/Home/johnny/.cncjs-pendant-gamepad.rc.json`). Additionally/alternatively, Unix systems will look for `cncjs-pendant-gamepad.rc.json` in `/etc/`. JSON keys are:
+
+  - accessTokenLifetime
+  - actionsMap (coming soon)
+  - baudrate
+  - controllerType
+  - port
+  - secret
+  - socketAddress
+  - socketPort
+  - verbose
+  - zProbeThickness
 
 
 First use recommendation

@@ -6,7 +6,7 @@
     "pendant",
     "gamepad"
   ],
-  "version": "2.0.0-dev.1",
+  "version": "2.0.0-dev.2",
   "license": "MIT",
   "contributors": [
     "Jim Derry <balthisar@gmail.com>",
@@ -24,8 +24,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node-gyp build",
-    "prepare": "npm run build-ts",
-    "build-ts": "tsc"
+    "prepare": "npm run build-ts && npm run copy-files",
+    "build-ts": "tsc",
+    "copy-files": "cpy 'src/*.json' lib"
   },
   "dependencies": {
     "bindings": "^1.5.0",
@@ -33,7 +34,8 @@
     "jsonwebtoken": "^8.5.1",
     "nan": "^2.15.0",
     "npmlog": "^6.0.1",
-    "socket.io-client": "^2.4.0"
+    "socket.io-client": "^2.4.0",
+    "cpy-cli": "^4.1.0"
   },
   "devDependencies": {
     "@types/bindings": "^1.5.1",

@@ -1,0 +1,12 @@
+{
+  "actionsMap": 
+  {
+    "AXIS_HAT_X_MINUS": 
+    {
+      "deadmanXYOnly" : "",
+      "deadmanZOnly" : "",
+      "shiftKeyOnly" : "recordGantryZeroWCSX()",
+      "unmodified" : ""
+    }
+  }
+}

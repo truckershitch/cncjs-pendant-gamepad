@@ -14,8 +14,10 @@ import { GcodeMarlin }                     from './gcode-marlin.js';
 import { Connector }                       from './connector';
 import { GamepadController, GamepadState } from './gamepad_controller';
 
-import log from "npmlog";
-import { clearInterval } from 'timers';
+import log from 'npmlog';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 //------------------------------------------------------------------------------
 // Constant and interface definitions.
@@ -52,6 +54,10 @@ export class XYZCoords {
   move_z_axis: number = 0.0;
 };
 
+// An interface for holding actions mappings. Perhaps a bit overly broad.
+export interface ActionsMappings {
+  [key: string]: any;
+}
 
 //------------------------------------------------------------------------------
 // Main module - provided access to command line options.

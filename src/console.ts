@@ -12,11 +12,17 @@ import { createRequire }                      from 'module';
 import { GamepadController }                  from './gamepad_controller.js';
 import { Connector }                          from './connector.js';
 import { Actions }                            from "./actions.js";
+import { ActionsMappings }                    from "./actions.js";
 
 // These weird (old-fashioned?) imports are inherently singletons, and we're
 // not interested in eventually testing them anyway, so let's just use them
 // as singletons without any dependency injectability.
-import log from "npmlog";
+import fs from 'fs';
+import log from 'npmlog';
+import os from 'os';
+import path from 'path';
+import process from 'process'; 
+
 
 //----------------------------------------------------------------------------
 // Constant definitions.
@@ -27,20 +33,33 @@ const LOGPREFIX = 'CLI      '; // keep at 9 digits for consistency
 // Interface definitions.
 //----------------------------------------------------------------------------
 
-// Temporarily allow this interface to be overly broad. Will fill this in
-// later. This lets us assign it as a type starting now.
+// An interface describing program options.
 export interface Options {
-  [key: string]: any;
+  accessTokenLifetime: string;
+  baudrate: string;
+  controllerType: string;
+  port: string;
+  secret: string;
+  simulate: boolean;
+  socketAddress: string;
+  socketPort: string;
+  verbose: number;
+  zProbeThickness: string;
+  actionsMap: ActionsMappings;
 };
 
 //----------------------------------------------------------------------------
 // Execute the command line program.
 //----------------------------------------------------------------------------
 export function startCLI() {
-  const options = configureCLI(program, programVersion())
+
+  const cliOptions : Options = configureCLI(program, programVersion())
     .parse()
     .opts();
-  options['simulate'] = (program.args[0] === 'simulate');
+  cliOptions['simulate'] = (program.args[0] === 'simulate');
+  cliOptions['actionsMap'] = {};
+
+  const options : Options = mergeOptions(cliOptions, getFileOptions())
 
   configureLogging(options);
 
@@ -72,20 +91,91 @@ function configureCLI(cli: Command, version: string) {
     .version(version)
     .name('cncjs-pendant-gamepad')
     .description('Use a supported game controller as a pendant to control CNCjs.')
-    .usage('-p <port> -b <baudrate> -t <type> [options] [run|simulate] # <- required options shown')
-    .requiredOption('-p, --port <port>',                  'serial port path of cnc machine')
-    .requiredOption('-b, --baudrate <baudrate>',          'baud rate of serial port or cnc machine')
-    .addOption(new Option('-t, --controller-type <type>', 'controller type').choices(['grbl', 'marlin']).makeOptionMandatory())
+    .usage('[options] [run|simulate]')
+
+    .option('-p, --port <port>',                          'serial port path of cnc machine',                        '/dev/ttyUSB0')
+    .option('-b, --baudrate <baudrate>',                  'baud rate of serial port or cnc machine',                '115200')
+
+    .addOption(new Option('-t, --controller-type <type>', 'controller type')
+      .choices(['grbl', 'marlin'])
+      .default('grbl'))
+
     .option('-s, --secret <secret>',                      'the secret key stored in the ~/.cncrc file')
-    .option('--socket-address <address>',                 'cncjs address or hostname', 'localhost')
-    .option('--socket-port <port>',                       'cncjs port', '8000')
+    .option('--socket-address <address>',                 'cncjs address or hostname',                              'localhost')
+    .option('--socket-port <port>',                       'cncjs port',                                             '8000')
     .option('--access-token-lifetime <lifetime>',         'access token lifetime in seconds or a time span string', '30d')
     .option('-v, --verbose',                              'display verbose messages; use multiple times to increase verbosity', function(v,a) {return a+1;}, 0)
-    .option('-z, --z-probe-thickness <mm>',               'thickess of the touch plate used for z-axis probing', '20')
+    .option('-z, --z-probe-thickness <mm>',               'thickess of the touch plate used for z-axis probing',    '20')
+
     .addArgument(new Argument('[action]', 'what to do').choices(['run', 'simulate']).default('run'))
   return cli;
 }
 
+
+//--------------------------------------------------------------------------
+// Get a Javascript object from the given JSON file.
+//--------------------------------------------------------------------------
+function loadOptionsFile(filename: string) : Options {
+  try {
+    const rawData = fs.readFileSync(filename, "utf8");
+    const result = JSON.parse(rawData);
+    return result || {} as Options;
+  } catch (err) {
+    log.warn(LOGPREFIX, err);
+    return {} as Options;
+  }
+}
+
+//--------------------------------------------------------------------------
+// Loads options from multiple sources (if available), and merges them
+// into a single representation. Note that Windows doesn't have anything
+// like /etc, and macOS should follow the the Unix convention for CLI
+// applications and use ~/, *not* ~/Library/Application Support/.
+//--------------------------------------------------------------------------
+function getFileOptions() : Options {
+  if (os.platform() == 'win32') {
+    const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'));
+    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'));
+    return { ...dfltOpts, ...userOpts };
+  } else {
+    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'));
+    const systOpts = loadOptionsFile(path.resolve('/', 'etc', 'cncjs-pendant-gamepad.rc.json'));
+    const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'));
+    return { ...dfltOpts, ...systOpts, ...userOpts };
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Merge file file options into commander's options. The shallow merge
+// doesn't work because we need to know whether an option from Commander
+// was specified on the command line or not for it to take precedence.
+//----------------------------------------------------------------------------
+function mergeOptions(cliOptions : Options, fileOptions : Options) : Options {
+
+  // Determine which option value to use in the program.
+  function winningValue(optionName : string) : any {
+    if (program.getOptionValueSource(optionName) === 'cli') {
+      return cliOptions[optionName];
+    }
+    return fileOptions[optionName] || cliOptions[optionName];
+  }
+
+  const result = {
+    "accessTokenLifetime": winningValue('accessTokenLifetime'),
+    "baudrate": winningValue('baudrate'),
+    "controllerType": winningValue('controllerType'),
+    "port": winningValue('port'),
+    "secret": winningValue('secret'),
+    "simulate": cliOptions['simulate'],
+    "socketAddress": winningValue('socketAddress'),
+    "socketPort": winningValue('socketPort'),
+    "verbose": winningValue('verbose'),
+    "zProbeThickness": winningValue('zProbeThickness'),
+    "actionsMap": fileOptions['actionsMap']  
+  }
+  return result;
+}
 
 //----------------------------------------------------------------------------
 // configureLogging()

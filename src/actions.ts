@@ -283,76 +283,168 @@ export class Actions {
     //==================================================
 
     //--------------------------------------------------
-    // Handle the dpad buttons when shifted.
+    // Turn the modifier condition into a lookup key.
     //--------------------------------------------------
-    if (shiftKeyOnly) {
-      if (id === 'AXIS_HAT_X' && a.AXIS_HAT_X === -1 )
-        this.gcodeSender.recordGantryZeroWCSX();
-      if (id === 'AXIS_HAT_X' && a.AXIS_HAT_X === 1 )
-        this.gcodeSender.recordGantryZeroWCSY();
-      if (id === 'AXIS_HAT_Y' && a.AXIS_HAT_Y === -1 )
-        this.gcodeSender.recordGantryZeroWCSZ();
-      if (id === 'AXIS_HAT_Y' && a.AXIS_HAT_Y === 1 )
-        this.gcodeSender.performZProbing();
+    let condition;
+
+    if (unmodified) condition = "unmodified"
+    if (shiftKeyOnly) condition = "shiftKeyOnly"
+    if (deadmanXYOnly) condition = "deadmanXYOnly"
+    if (deadmanZOnly) condition = "deadmanZOnly"
+
+    //--------------------------------------------------
+    // The direction arrows are treated as axes instead
+    // of buttons, so let's convert them to button-like
+    // values so we can react to them. For other
+    // buttons, make sure that we are reacting to
+    // button presses rather than modifier presses.
+    //--------------------------------------------------
+    let trigger;
+
+    if (id === 'AXIS_HAT_X') {
+      if (a.AXIS_HAT_X === -1) trigger = 'AXIS_HAT_X_MINUS';
+      if (a.AXIS_HAT_X === 1)  trigger = 'AXIS_HAT_X_PLUS';
+      if (condition === 'deadmanXYOnly' || condition === 'deadmanZOnly') trigger = null;
+    } else if (id === 'AXIS_HAT_Y') {
+        if (a.AXIS_HAT_Y === -1) trigger = 'AXIS_HAT_Y_MINUS';
+        if (a.AXIS_HAT_Y === 1)  trigger = 'AXIS_HAT_Y_PLUS';
+        if (condition === 'deadmanXYOnly' || condition === 'deadmanZOnly') trigger = null;
+      } else if (b[id]) {
+      trigger = id;
     }
 
-
     //--------------------------------------------------
-    // Handle the back/select and start/forward buttons
+    // Do the work.
     //--------------------------------------------------
+    this.performTask(trigger, condition);
 
-    if (id === 'KEYCODE_BACK' && b.KEYCODE_BACK)
-      if (shiftKeyOnly)
-        this.gcodeSender.controllerReset();
-      else if (unmodified)
-        this.gcodeSender.controllerUnlock();
-
-    if (id === 'KEYCODE_BUTTON_START' && b.KEYCODE_BUTTON_START)
-      if (shiftKeyOnly)
-        this.gcodeSender.controllerCyclestart();
-      else if (unmodified)
-        this.gcodeSender.controllerFeedhold();
-      else if (deadmanXYOnly)
-        this.gcodeSender.performHoming();
-
-    //--------------------------------------------------
-    // Handle the ABXY buttons.
-    // The logic here ensures that these events are NOT
-    // triggered if the button is already held down while
-    // a modifier is released.
-    //--------------------------------------------------
-
-    if (shiftKeyOnly) {
-      if (id === 'KEYCODE_BUTTON_A' && b.KEYCODE_BUTTON_A)
-        this.gcodeSender.recordGantryReturn();
-      else if (id === 'KEYCODE_BUTTON_B' && b.KEYCODE_BUTTON_B)
-        { /* noop, but add your own functionality if you like. */ }
-      else if (id === 'KEYCODE_BUTTON_X' && b.KEYCODE_BUTTON_X)
-        { /* noop, but add your own functionality if you like. */ }
-      else if (id === 'KEYCODE_BUTTON_Y' && b.KEYCODE_BUTTON_Y)
-        this.gcodeSender.recordGantryHome();
-    } else if (deadmanXYOnly) {
-      if (id === 'KEYCODE_BUTTON_A' && b.KEYCODE_BUTTON_A)
-        this.gcodeSender.moveGantryReturn();
-      else if (id === 'KEYCODE_BUTTON_B' && b.KEYCODE_BUTTON_B)
-        this.gcodeSender.moveGantryZProbePos();
-      else if (id === 'KEYCODE_BUTTON_X' && b.KEYCODE_BUTTON_X)
-        this.gcodeSender.moveGantryWCSHome();
-      else if (id === 'KEYCODE_BUTTON_Y' && b.KEYCODE_BUTTON_Y)
-        this.gcodeSender.moveGantryHome();
-    } else if (unmodified) {
-      if (id === 'KEYCODE_BUTTON_A' && b.KEYCODE_BUTTON_A)
-        this.gcodeSender.controllerStart();
-      else if (id === 'KEYCODE_BUTTON_B' && b.KEYCODE_BUTTON_B)
-        this.gcodeSender.controllerStop();
-      else if (id === 'KEYCODE_BUTTON_X' && b.KEYCODE_BUTTON_X)
-        this.gcodeSender.controllerResume();
-      else if (id === 'KEYCODE_BUTTON_Y' && b.KEYCODE_BUTTON_Y)
-        this.gcodeSender.controllerPause();
-    }
   } // onUse()
 
   
+  //--------------------------------------------------------------------------
+  // Perform tasks. We were going to do this via introspection, but it's
+  // probably dangerous to let a user run abritrary methods. Besides, who
+  // doesn't love big giant switch statements?
+  //--------------------------------------------------------------------------
+  performTask(trigger : string, condition : string) {
+
+    const taskArray = this.options.actionsMap?.[trigger]?.[condition]
+
+    if (taskArray) {
+
+      const task = Array.isArray(taskArray) ? taskArray[0] : taskArray;
+      const params = Array.isArray(taskArray) ? taskArray.slice(1) : null;
+ 
+
+      log.debug(LOGPREFIX, `trigger:${trigger} condition:${condition} task: ${task} params: ${params}`);
+
+      switch(task.toUpperCase()) {
+        
+        case 'CONTROLLERCYCLESTART': {
+          this.gcodeSender.controllerCyclestart();
+          break;
+        }
+        case 'CONTROLLERFEEDHOLD': {
+          this.gcodeSender.controllerFeedhold();
+          break;
+        }
+        case 'CONTROLLERPAUSE': {
+          this.gcodeSender.controllerPause();
+          break;
+        }
+        case 'CONTROLLERRESET': {
+          this.gcodeSender.controllerReset();
+          break;
+        }
+        case 'CONTROLLERRESUME': {
+          this.gcodeSender.controllerResume();
+          break;
+        }
+        case 'CONTROLLERSTART': {
+          this.gcodeSender.controllerStart();
+          break;
+        }
+        case 'CONTROLLERSTOP': {
+          this.gcodeSender.controllerStop();
+          break;
+        }
+        case 'CONTROLLERUNLOCK': {
+          this.gcodeSender.controllerUnlock();
+          break;
+        }
+        case 'COOLANTFLOODON': {
+          this.gcodeSender.coolantFloodOn();
+          break;
+        }
+        case 'COOLANTMISTON': {
+          this.gcodeSender.coolantMistOn();
+          break;
+        }
+        case 'COOLANTOFF': {
+          this.gcodeSender.coolantOff();
+          break;
+        }
+        case 'MOVEGANTRYHOME': {
+          this.gcodeSender.moveGantryHome();
+          break;
+        }
+        case 'MOVEGANTRYRETURN': {
+          this.gcodeSender.moveGantryReturn();
+          break;
+        }
+        case 'MOVEGANTRYWCSHOME': {
+          this.gcodeSender.moveGantryWCSHome();
+          break;
+        }
+        case 'MOVEGANTRYZPROBEPOS': {
+          this.gcodeSender.moveGantryZProbePos();
+          break;
+        }
+        case 'PERFORMHOMING': {
+          this.gcodeSender.performHoming();
+          break;
+        }
+        case 'PERFORMZPROBING': {
+          this.gcodeSender.performZProbing();
+          break;
+        }
+        case 'RECORDGANTRYZEROWCSX': {
+          this.gcodeSender.recordGantryZeroWCSX();
+          break;
+        }
+        case 'RECORDGANTRYZEROWCSY': {
+          this.gcodeSender.recordGantryZeroWCSY();
+          break;
+        }
+        case 'RECORDGANTRYZEROWCSZ': {
+          this.gcodeSender.recordGantryZeroWCSZ();
+          break;
+        }
+        case 'RECORDGANTRYHOME': {
+          this.gcodeSender.recordGantryHome();
+          break;
+        }
+        case 'RECORDGANTRYRETURN': {
+          this.gcodeSender.recordGantryReturn();
+          break;
+        }
+        case 'SPINDLEOFF': {
+          this.gcodeSender.spindleOff();
+          break;
+        }
+        case 'SPINDLEON': {
+          this.gcodeSender.spindleOn(params[0]);
+          break;
+        }
+        
+        default:
+          break;
+        
+      }
+
+      }
+  }
+
   //--------------------------------------------------------------------------
   // We don't have continuous control over motors, so the best that we can
   // do is move them a certain distance for fixed periods of time. We will

@@ -5,73 +5,73 @@
     {
       "AXIS_HAT_X_MINUS": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : null,
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "recordGantryZeroWCSX",
+        "unmodified" : null
       },
       "AXIS_HAT_X_PLUS": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : null,
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "recordGantryZeroWCSY",
+        "unmodified" : null
       },
       "AXIS_HAT_Y_MINUS": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : null,
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "recordGantryZeroWCSZ",
+        "unmodified" : null
       },
       "AXIS_HAT_Y_PLUS": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : null,
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "performZProbing",
+        "unmodified" : null
       },
       "KEYCODE_BACK": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : null,
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "controllerReset",
+        "unmodified" : "controllerUnlock"
       },
       "KEYCODE_BUTTON_START": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : "performHoming",
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "controllerCyclestart",
+        "unmodified" : "controllerFeedhold"
       },
       "KEYCODE_BUTTON_A": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : "moveGantryReturn",
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "recordGantryReturn",
+        "unmodified" : "controllerStart"
       },
       "KEYCODE_BUTTON_B": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : "moveGantryZProbePos",
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "coolantFloodOn",
+        "unmodified" : "controllerStop"
       },
       "KEYCODE_BUTTON_X": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : "moveGantryWCSHome",
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "coolantOff",
+        "unmodified" : "controllerResume"
       },
       "KEYCODE_BUTTON_Y": 
       {
-        "deadmanXYOnly" : "",
-        "deadmanZOnly" : "",
-        "shiftKeyOnly" : "",
-        "unmodified" : ""
+        "deadmanXYOnly" : "moveGantryHome",
+        "deadmanZOnly" : null,
+        "shiftKeyOnly" : "recordGantryHome",
+        "unmodified" : "controllerPause"
       }
     }
   }

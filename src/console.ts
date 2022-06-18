@@ -22,6 +22,7 @@ import log from 'npmlog';
 import os from 'os';
 import path from 'path';
 import process from 'process'; 
+import merge from 'deepmerge';
 
 //----------------------------------------------------------------------------
 // Constant definitions.
@@ -138,12 +139,14 @@ function getFileOptions(optionsVersion : string) : Options {
   if (os.platform() == 'win32') {
     const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'), optionsVersion);
     const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
-    return { ...dfltOpts, ...userOpts };
+    const result = merge.all([dfltOpts, userOpts]);
+    return result as Options;
   } else {
     const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
     const systOpts = loadOptionsFile(path.resolve('/', 'etc', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
     const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'), optionsVersion);
-    return { ...dfltOpts, ...systOpts, ...userOpts };
+    const result = merge.all([dfltOpts, systOpts, userOpts]);
+    return result as Options;
     }
 }
 

@@ -23,7 +23,6 @@ import os from 'os';
 import path from 'path';
 import process from 'process'; 
 
-
 //----------------------------------------------------------------------------
 // Constant definitions.
 //----------------------------------------------------------------------------
@@ -53,13 +52,16 @@ export interface Options {
 //----------------------------------------------------------------------------
 export function startCLI() {
 
-  const cliOptions : Options = configureCLI(program, programVersion())
+  const version = programVersion();
+  const optVersion = 'options_version_2.0';
+
+  const cliOptions : Options = configureCLI(program, version)
     .parse()
     .opts();
   cliOptions['simulate'] = (program.args[0] === 'simulate');
   cliOptions['actionsMap'] = {};
 
-  const options : Options = mergeOptions(cliOptions, getFileOptions())
+  const options : Options = mergeOptions(cliOptions, getFileOptions(optVersion))
 
   configureLogging(options);
 
@@ -115,10 +117,10 @@ function configureCLI(cli: Command, version: string) {
 //--------------------------------------------------------------------------
 // Get a Javascript object from the given JSON file.
 //--------------------------------------------------------------------------
-function loadOptionsFile(filename: string) : Options {
+function loadOptionsFile(filename: string, optionsVersion : string) : Options {
   try {
     const rawData = fs.readFileSync(filename, "utf8");
-    const result = JSON.parse(rawData);
+    const result = JSON.parse(rawData)[optionsVersion];
     return result || {} as Options;
   } catch (err) {
     log.warn(LOGPREFIX, err);
@@ -132,15 +134,15 @@ function loadOptionsFile(filename: string) : Options {
 // like /etc, and macOS should follow the the Unix convention for CLI
 // applications and use ~/, *not* ~/Library/Application Support/.
 //--------------------------------------------------------------------------
-function getFileOptions() : Options {
+function getFileOptions(optionsVersion : string) : Options {
   if (os.platform() == 'win32') {
-    const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'));
-    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'));
+    const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'), optionsVersion);
+    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
     return { ...dfltOpts, ...userOpts };
   } else {
-    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'));
-    const systOpts = loadOptionsFile(path.resolve('/', 'etc', 'cncjs-pendant-gamepad.rc.json'));
-    const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'));
+    const dfltOpts = loadOptionsFile(path.resolve('lib', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
+    const systOpts = loadOptionsFile(path.resolve('/', 'etc', 'cncjs-pendant-gamepad.rc.json'), optionsVersion);
+    const userOpts = loadOptionsFile(path.resolve(os.homedir(), '.cncjs-pendant-gamepad.rc.json'), optionsVersion);
     return { ...dfltOpts, ...systOpts, ...userOpts };
     }
 }

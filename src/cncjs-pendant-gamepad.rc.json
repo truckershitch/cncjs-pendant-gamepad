@@ -1,12 +1,78 @@
 {
-  "actionsMap": 
+  "options_version_2.0": 
   {
-    "AXIS_HAT_X_MINUS": 
+    "actionsMap": 
     {
-      "deadmanXYOnly" : "",
-      "deadmanZOnly" : "",
-      "shiftKeyOnly" : "recordGantryZeroWCSX()",
-      "unmodified" : ""
+      "AXIS_HAT_X_MINUS": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "AXIS_HAT_X_PLUS": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "AXIS_HAT_Y_MINUS": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "AXIS_HAT_Y_PLUS": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "KEYCODE_BACK": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "KEYCODE_BUTTON_START": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "KEYCODE_BUTTON_A": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "KEYCODE_BUTTON_B": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "KEYCODE_BUTTON_X": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      },
+      "KEYCODE_BUTTON_Y": 
+      {
+        "deadmanXYOnly" : "",
+        "deadmanZOnly" : "",
+        "shiftKeyOnly" : "",
+        "unmodified" : ""
+      }
     }
   }
 }

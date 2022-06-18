@@ -275,6 +275,13 @@ export class Actions {
     this.gamepadState = state;
     this.axisInstructions = ai;
 
+    //==================================================
+    // All of the movement is hard-coded; everything
+    // else is configured in a settings file. We ship
+    // with a built in settings file, but the users can
+    // create his or her own.
+    //==================================================
+
     //--------------------------------------------------
     // Handle the dpad buttons when shifted.
     //--------------------------------------------------
@@ -294,13 +301,13 @@ export class Actions {
     // Handle the back/select and start/forward buttons
     //--------------------------------------------------
 
-    if (id === 'KEYCODE_BACK')
+    if (id === 'KEYCODE_BACK' && b.KEYCODE_BACK)
       if (shiftKeyOnly)
         this.gcodeSender.controllerReset();
       else if (unmodified)
         this.gcodeSender.controllerUnlock();
 
-    if (id === 'KEYCODE_BUTTON_START')
+    if (id === 'KEYCODE_BUTTON_START' && b.KEYCODE_BUTTON_START)
       if (shiftKeyOnly)
         this.gcodeSender.controllerCyclestart();
       else if (unmodified)

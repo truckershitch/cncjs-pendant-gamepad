@@ -18,6 +18,7 @@ import log from 'npmlog';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { GcodeShapeoko } from './gcode-shapeoko';
 
 //------------------------------------------------------------------------------
 // Constant and interface definitions.
@@ -101,6 +102,9 @@ export class Actions {
         break;
       case 'marlin':
         gcode = GcodeMarlin;
+        break;
+      case 'shapeoko':
+        gcode = GcodeShapeoko;
         break;
       default:
         log.error(LOGPREFIX, `Controller type ${this.options.controllerType} unknown; unable to continue`);

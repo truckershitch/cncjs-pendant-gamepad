@@ -118,6 +118,38 @@ const controllerMapping = {
       }
   },
 
+  // Xbox Wireless Controller
+  'Xbox Wireless Controller': {
+  
+    'buttons': {
+      '0':  'KEYCODE_BUTTON_A',
+      '1':  'KEYCODE_BUTTON_B',
+      '4':  'KEYCODE_BUTTON_Y',
+      '3':  'KEYCODE_BUTTON_X',
+      '6':  'KEYCODE_BUTTON_L1',
+      '7':  'KEYCODE_BUTTON_R1',
+      //'5':  'KEYCODE_BUTTON_LTRIGGER', // note: ALSO activates the axis.
+      //'4':  'KEYCODE_BUTTON_RTRIGGER', // note: ALSO activates the axis.
+      //'8':  'KEYCODE_BACK',
+      '11':  'KEYCODE_BUTTON_START',
+      '13': 'KEYCODE_BUTTON_THUMBL',
+      '14': 'KEYCODE_BUTTON_THUMBR',
+      //'12': 'KEYCODE_HOME',
+      //'13': 'KEYCODE_BUTTON_TOUCHPAD'
+      },
+    
+    'axes': {
+      '1': 'AXIS_Y',
+      '0': 'AXIS_X',
+      '3': 'AXIS_Z',
+      '5': 'AXIS_LTRIGGER',
+      '4': 'AXIS_RTRIGGER',
+      '2': 'AXIS_RZ',
+      '6': 'AXIS_HAT_X', // these two read reversed in joytest
+      '7': 'AXIS_HAT_Y'
+      }
+  },
+
   // This is a generic mapping, but it also represents a PS5 DualSense
   // controller. The controller reports "Wireless Controller", so it's what
   // we'll use when no others are detected.

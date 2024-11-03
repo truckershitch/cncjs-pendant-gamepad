@@ -11,6 +11,7 @@ import { Options }                         from './console';
 import { GcodeSender }                     from './gcode-sender.js';
 import { GcodeGrbl }                       from './gcode-grbl.js';
 import { GcodeMarlin }                     from './gcode-marlin.js';
+import { GcodeShapeoko }                   from './gcode-shapeoko.js';
 import { Connector }                       from './connector';
 import { GamepadController, GamepadState } from './gamepad_controller';
 
@@ -18,7 +19,6 @@ import log from 'npmlog';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { GcodeShapeoko } from './gcode-shapeoko';
 
 //------------------------------------------------------------------------------
 // Constant and interface definitions.

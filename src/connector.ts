@@ -42,7 +42,7 @@ export class Connector {
   serialConnected = false;
   options: Options;
   socket: io.Socket;
-  serial: NodeJS.Timer;
+  serial: NodeJS.Timeout;
   logPrefix: string;
   awaitingString = 'Waiting for a game controller to be connected.';
   

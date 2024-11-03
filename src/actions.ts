@@ -68,7 +68,7 @@ export class Actions {
   gamepadController: GamepadController;       // connection to gamepad
   options: Options;                           // program-wide options
   gcodeSender: GcodeSender;                   // abstraction interface
-  jogTimer: NodeJS.Timer;                     // jog timer reference
+  jogTimer: NodeJS.Timeout;                     // jog timer reference
 
   gamepadState = {} as GamepadState;          // state of current controller
   axisInstructions = new XYZCoords();         // next jog movement instructions
